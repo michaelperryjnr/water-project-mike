@@ -1,7 +1,7 @@
 // config/db.js
 
-const mongoose = require('mongoose');
-require('dotenv').config();
+const mongoose = require("mongoose");
+require("dotenv").config();
 
 const connectDB = async () => {
   try {
@@ -16,4 +16,17 @@ const connectDB = async () => {
   }
 };
 
-module.exports = connectDB;
+const disconnectDB = async () => {
+  try {
+    await mongoose.connection.close();
+    console.log("MongoDB Disconnected");
+  } catch (error) {
+    console.error("Error disconnecting from MongoDB", err);
+    throw err;
+  }
+};
+
+module.exports = {
+  connectDB,
+  disconnectDB,
+};
