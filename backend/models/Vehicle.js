@@ -12,136 +12,114 @@ const VEHICLE_TYPES = [
   "utility",
 ];
 
-const VEHICLE_STATUS = [
-  "active",
-  "maintenance",
-  "retired",
-  "available",
-  "in-use",
-  "reserved",
-];
+const FUEL_TYPES = ["diesel", "petrol"];
 
-const OWNERSHIP_TYPES = [
-  "company-owned",
-  "leased",
-  "rented",
-  "employee-assigned",
-];
-
-const FUEL_TYPES = ["diesel", "gasoline", "electric", "hybrid"];
-
-const TRANSMISSION_TYPES = ["automatic", "manual", "semi-automatic", "cvt"];
+const WEIGHT_UNITS = ["kg", "grams", "tons"];
 
 const vehicleSchema = new mongoose.Schema(
   {
-    // basic identification details
-    vehicleRegistrationNumber: {
+    // Basic identification details
+    registrationNumber: {
       type: String,
       required: true,
       unique: true,
       trim: true,
     },
-    vinNumber: {
+    description: {
       type: String,
-      required: true,
-      unique: true,
       trim: true,
     },
-    plateNumber: {
-      type: String,
-      required: true,
-      unique: true,
-      trim: true,
-    },
-    // vehicle classification
-    vehicleType: {
+    type: {
       type: String,
       enum: VEHICLE_TYPES,
-      required: true,
-    },
-    make: {
-      type: String,
       required: true,
     },
     model: {
       type: String,
       required: true,
     },
-    year: {
+    brand: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Brand",
+      required: true,
+    },
+    yearOfManufacturing: {
       type: Number,
       required: true,
       min: 1980,
       max: new Date().getFullYear() + 1,
     },
+    chasisNumber: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
+    },
+    sittingCapacity: {
+      type: Number,
+      required: true,
+      min: 1,
+    },
+    weight: {
+      type: Number,
+      required: true,
+    },
+    weightType: {
+      type: String,
+      enum: WEIGHT_UNITS,
+      required: true,
+    },
+    color: {
+      type: String,
+      trim: true,
+    },
 
-    // technical classification
+    // Insurance details
+    insurance: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Insurance",
+    },
+    insuranceStartDate: {
+      type: Date,
+    },
+    insuranceEndDate: {
+      type: Date,
+    },
+
+    // Roadworthiness details
+    roadWorth: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "RoadWorth",
+    },
+    roadWorthStartDate: {
+      type: Date,
+    },
+    roadWorthEndDate: {
+      type: Date,
+    },
+
+    // Technical details
     fuelType: {
       type: String,
       enum: FUEL_TYPES,
       required: true,
     },
-    transmissionType: {
-      type: String,
-      enum: TRANSMISSION_TYPES,
+    pictures: {
+      type: [String], // Array to store multiple image paths
     },
-
-    // operational details
-    currentMileage: {
+    costOfVehicle: {
       type: Number,
-      default: 0,
+      required: true,
     },
     purchaseDate: {
       type: Date,
-    },
-    purchasePrice: {
-      type: Number,
+      required: true,
     },
 
-    // status and ownership details
-    status: {
-      type: String,
-      enum: VEHICLE_STATUS,
-      default: "active",
-    },
-    ownershipType: {
-      type: String,
-      enum: OWNERSHIP_TYPES,
-    },
-    assignedDepartment: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Department",
-    },
-    assignedEmployee: {
+    // Assignment details
+    assignedDriver: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Employee",
-    },
-
-    // insurance and compliance details
-    insurancePolicy: {
-      type: String,
-    },
-    insuranceExpiryDate: {
-      type: Date,
-    },
-    technicalInspectionDate: {
-      type: Date,
-    },
-
-    // additional details
-    description: {
-      type: String,
-    },
-    colour: {
-      type: String,
-    },
-    seatingCapacity: {
-      type: Number,
-      min: 1,
-    },
-    // if the vehicle is part of the company's shared vehicle fleet or a fleet that can be temporarily assigned to different employees or departments as needed
-    isAvailableForPool: {
-      type: Boolean,
-      default: true,
     },
   },
   {
@@ -149,46 +127,48 @@ const vehicleSchema = new mongoose.Schema(
   }
 );
 
+// Middleware to format fields before saving
 vehicleSchema.pre("save", function (next) {
-  const fieldsToLowercase = [
-    "make",
-    "model",
-    "description",
-    "colour",
-    "vehicleRegistrationNumber",
-    "vinNumber",
-    "plateNumber",
-  ];
-
+  const fieldsToLowercase = ["registrationNumber", "chasisNumber", "color", "description", "model"];
   fieldsToLowercase.forEach((field) => {
     if (this[field]) {
       this[field] = this[field].toLowerCase();
     }
   });
-
   next();
 });
 
-vehicleSchema.pre("updateOne", function (next) {
-  const fieldsToLowercase = [
-    "make",
-    "model",
-    "description",
-    "color",
-    "vehicleRegistrationNumber",
-    "vinNumber",
-    "plateNumber",
-  ];
-
-  fieldsToLowercase.forEach((field) => {
-    if (this._update[field]) {
-      this._update[field] = this._update[field].toLowerCase();
-    }
-  });
-
-  next();
-});
+// Vehicle Driver Log Schema
+const vehicleDriverLogSchema = new mongoose.Schema(
+  {
+    vehicle: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Vehicle",
+      required: true,
+    },
+    employee: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Employee",
+      required: true,
+    },
+    startDate: {
+      type: Date,
+      required: true,
+    },
+    endDate: {
+      type: Date,
+    },
+    purpose: {
+      type: String,
+      trim: true,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
 
 const Vehicle = mongoose.model("Vehicle", vehicleSchema);
+const VehicleDriverLog = mongoose.model("VehicleDriverLog", vehicleDriverLogSchema);
 
-module.exports = Vehicle;
+module.exports = { Vehicle, VehicleDriverLog };
