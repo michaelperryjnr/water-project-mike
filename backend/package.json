@@ -9,7 +9,8 @@
     "dev": "nodemon index.js",
     "populateNationality": "node scripts/populateNationalities.js",
     "populateCountry": "node scripts/populateCountries.js",
-    "populateContractTypes": "node scripts/populateContractTypes.js"
+    "populateContractTypes": "node scripts/populateContractTypes.js",
+    "populateBrands": "node scripts/populateBrands.js"
   },
   "keywords": [],
   "author": "",
