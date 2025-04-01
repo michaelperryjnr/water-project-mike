@@ -63,7 +63,7 @@ function startServer() {
     app.use("/api/contracttypes", contractTypeRoutes);
 
     const vehicleRoutes = require("./routes/vehicleRoutes")
-    app.use("/api/vehicle", vehicleRoutes)
+    app.use("/api/vehicles", vehicleRoutes)
 
     const vehicleDriverLogRoutes = require("./routes/vehicleDriverLogRoutes")
     app.use("/api/vehicle-driver-logs", vehicleDriverLogRoutes)
