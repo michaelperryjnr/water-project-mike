@@ -21,7 +21,7 @@ exports.getVehicleDriverLogs = async(req, res) => {
 
 
 // get a single driver log by ID
-exports.getVehicleDriverLogByID = async(req, res) => {
+exports.getVehicleDriverLogById = async(req, res) => {
     try{
         const vehicleDriverLog = await VehicleDriverLog.findById(req.params.id)
             .populate({
