@@ -5,40 +5,15 @@ const swaggerUi = require("swagger-ui-express");
 const swaggerSpec = require("./swagger");
 const multer = require("multer"); // Add multer
 const path = require("path"); // For handling file paths
-const fs = require("fs"); // For creating the uploads directory
+const fs = require("fs");
+const uploadMiddleware = require("./middlewares/uploadMiddleware")
 
 const app = express();
 const port = process.env.PORT || 5000;
 
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/"); // Save files to the 'uploads' folder
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, `employee-${uniqueSuffix}${path.extname(file.originalname)}`); // e.g., employee-123456789.jpg
-  },
-});
-
-// File filter to accept only images
-const fileFilter = (req, file, cb) => {
-  const allowedTypes = ["image/jpeg", "image/png", "image/gif"];
-  if (allowedTypes.includes(file.mimetype)) {
-    cb(null, true);
-  } else {
-    cb(new Error("Only JPEG, PNG, and GIF images are allowed"), false);
-  }
-};
-
-const upload = multer({
-  storage: storage,
-  fileFilter: fileFilter,
-  limits: { fileSize: 5 * 1024 * 1024 }, // Limit file size to 5MB
-});
-
 // Create the uploads directory if it doesn't exist
 const uploadDir = path.join(__dirname, "uploads");
+
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir);
 }
@@ -67,7 +42,7 @@ function startServer() {
 
     //Routes
     const employeeRoutes = require("./routes/employeeRoutes");
-    app.use("/api/employees", employeeRoutes(upload)); //Pass the upload middleware to the employeeRoutes
+    app.use("/api/employees", employeeRoutes(uploadMiddleware.upload)); //Pass the upload middleware to the employeeRoutes
 
     const nationalityRoutes = require("./routes/nationalityRoutes");
     app.use("/api/nationalities", nationalityRoutes);
@@ -86,6 +61,12 @@ function startServer() {
 
     const contractTypeRoutes = require("./routes/contractTypeRoutes");
     app.use("/api/contracttypes", contractTypeRoutes);
+
+    const vehicleRoutes = require("./routes/vehicleRoutes")
+    app.use("/api/vehicle", vehicleRoutes)
+
+    const vehicleDriverLogRoutes = require("./routes/vehicleDriverLogRoutes")
+    app.use("/api/vehicle-driver-logs", vehicleDriverLogRoutes)
 
     //Start the server
     const server = app.listen(port, () =>
