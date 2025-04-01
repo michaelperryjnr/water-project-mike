@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const vehicleDriverLogSchema = new mongoose.Schema({
   vehicleId: { type: mongoose.Schema.Types.ObjectId, ref: "Vehicle", required: true }, // Frontend: Not editable (display vehicle details)
   employeeId: { type: mongoose.Schema.Types.ObjectId, ref: "Employee", required: true }, // Frontend: Dropdown (populated from Employees collection)
+  vehicleLocation: {type: String, required: true},
   assignmentStartDate: { type: Date, required: true, default: Date.now }, // Frontend: Date picker (default to current date)
   assignmentEndDate: { type: Date }, // Frontend: Date picker
   reasonForAssignment: { type: String, trim: true }, // Frontend: Text input (e.g., "Assigned for daily operations")
