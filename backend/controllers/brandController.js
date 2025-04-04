@@ -14,7 +14,7 @@ exports.getAllBrands = async (req, res) =>{
 }
 
 // get brand by id
-exports.getBrandByID = async (req, res) => {
+exports.getBrandById = async (req, res) => {
     try {
         const brand = await Brand.findById(req.params.id);
 
