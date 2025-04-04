@@ -74,7 +74,8 @@ function startServer() {
     const brandRoutes = require("./routes/brandRoutes")
     app.use("/api/brands", brandRoutes)
 
-    
+    const roadWorthRoutes = require("./routes/roadWorthRoutes")
+    app.use("/api/roadworth", roadWorthRoutes)
 
     //Start the server
     const server = app.listen(port, () =>
