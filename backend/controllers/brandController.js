@@ -47,8 +47,23 @@ exports.createBrand = async (req, res) => {
 // update brand
 exports.updateBrand = async (req, res) => {
     try {
+        const brand = await Brand.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        if (!brand) return res.status(STATUS_CODES.NOT_FOUND).json({ message: 'Brand not found.'});
 
+        res.status(STATUS_CODES.OK).json(brand);
     } catch (error) {
-        
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ message: error.message })
     }
 }
+
+//Delete a brand
+exports.deleteBrand = async (req, res) => {
+    try {
+        const brand = await Brand.findByIdAndDelete(req.params.id);
+        if (!brand) return res.status(STATUS_CODES.NOT_FOUND).json({ message: 'Brand not found.'});
+
+        res.status(STATUS_CODES.OK).json({ message: 'Brand deleted.' });
+    } catch (error) {
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ message: error.message });
+    }
+};
