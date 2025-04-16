@@ -1,3 +1,14 @@
+require("dotenv").config()
+
+const CONFIG = {
+    ACCESS_TOKEN_SECRET: process.env.ACCESS_TOKEN_SECRET,
+    REFRESH_TOKEN_SECRET: process.env.REFRESH_TOKEN_SECRET,
+    ACCESS_TOKEN_EXPIRATION: process.env.ACCESS_TOKEN_EXPIRATION,
+    REFRESH_TOKEN_EXPIRATION: process.env.REFRESH_TOKEN_EXPIRATION,
+    MONGO_URI: process.env.MONGO_URI,
+    PORT: process.env.PORT,
+    LOG_LEVEL: process.env.LOG_LEVEL,
+}
 const STATUS_CODES = {
     BAD_REQUEST: 400,
     INTERNAL_SERVER_ERROR: 500,
@@ -8,4 +19,4 @@ const STATUS_CODES = {
 }
 
 
-module.exports = {STATUS_CODES}
+module.exports = {STATUS_CODES, CONFIG}
