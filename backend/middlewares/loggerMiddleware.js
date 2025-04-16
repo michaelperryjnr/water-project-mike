@@ -1,8 +1,7 @@
 const express = require('express');
 const {createLogger, format, transports} = require('winston');
 const DailyRotateFile = require('winston-daily-rotate-file');
-const {CONFIG} = require("../config/core")
-const path = require('path');
+const {CONFIG, STATUS_CODES} = require("../config/core")
 
 const logger = createLogger({
     level: CONFIG.LOG_LEVEL,
@@ -32,7 +31,7 @@ const logger = createLogger({
 function ErrorHandler(err, req, res, next) {
     logger.error(`Error: ${err.message} | URL: ${req.originalUrl} | IP: ${req.ip} | User-Agent: ${req.headers["user-agent"]}`)
 
-    res.status(500).json({error: "Something went wrong. Please try again later."})
+    res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({error: "Something went wrong. Please try again later."})
 
     next(err.message)
 }
