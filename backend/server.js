@@ -9,6 +9,8 @@ const fs = require("fs");
 const uploadMiddleware = require("./middlewares/uploadMiddleware")
 const {ErrorHandler, Logger} = require("./middlewares/loggerMiddleware")
 const {apiLimiter} = require("./middlewares/rateLimiterMiddleware")
+const helmet = require("helmet")
+const corsOptions = require("./middlewares/corsMiddleware")
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -24,13 +26,18 @@ if (!fs.existsSync(uploadDir)) {
 
 function startServer() {
   try {
-    app.use(cors());
     app.use(express.json());
+    app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 
     // Error Handling & Logging Middleware
     app.use(ErrorHandler)
     app.use(Logger)
     app.use(apiLimiter)
+
+    // Security Middleware
+    app.use(helmet.hidePoweredBy({setTo: "PHP 4.2.0"}))
+    app.use(helmet())
+    app.use(cors(corsOptions))
 
     // API Docs
     app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
