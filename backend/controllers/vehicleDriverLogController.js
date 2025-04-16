@@ -1,8 +1,10 @@
 const VehicleDriverLog = require("../models/VehicleDriver")
+const Logger = require("../utils/logger")
 
 // get all vehicle driver logs
 exports.getVehicleDriverLogs = async(req, res) => {
     try{
+        Logger("Fetching all vehicle driver logs", req, "vehicleDriverLogController")
         const vehicleDriverLogs = await VehicleDriverLogs.find()
             .populate({
                 path:"vehicleId",
@@ -15,6 +17,7 @@ exports.getVehicleDriverLogs = async(req, res) => {
 
         res.status(200).json(vehicleDriverLogs)
     }catch(error){
+        Logger("Failed to fetch vehicle driver logs", req, "vehicleDriverLogController", "error", error)
         res.status(500).json({message: error.message})
     }
 }
@@ -23,6 +26,7 @@ exports.getVehicleDriverLogs = async(req, res) => {
 // get a single driver log by ID
 exports.getVehicleDriverLogById = async(req, res) => {
     try{
+        Logger("Fetching vehicle driver log by ID", req, "vehicleDriverLogController")
         const vehicleDriverLog = await VehicleDriverLog.findById(req.params.id)
             .populate({
                 path: "vehicleId",
@@ -36,6 +40,7 @@ exports.getVehicleDriverLogById = async(req, res) => {
         if (!vehicleDriverLog) return res.status(404).json({message: "Vehicle driver log not found"})
         res.status(200).json(vehicleDriverLog);
     }catch(error){
+        Logger("Failed to fetch vehicle driver log by ID", req, "vehicleDriverLogController", "error", error)
         res.status(500).json({message: error.message})
     }
 }
@@ -44,6 +49,7 @@ exports.getVehicleDriverLogById = async(req, res) => {
 // create a new vehicle driver log
 exports.createVehicleDriverLog = async (req, res) => {
     try{
+        Logger("Creating new vehicle driver log", req, "vehicleDriverLogController")
         const vehicleDriverLogData = req.body
 
         const newVehicleDriverLog = new VehicleDriverLog(vehicleDriverLogData)
@@ -62,6 +68,7 @@ exports.createVehicleDriverLog = async (req, res) => {
         
         res.status(201).json(populateVehicleDriverLog);
     } catch(error) {
+        Logger("Failed to create new vehicle driver log", req, "vehicleDriverLogController", "error", error)
         if(error.name === "ValidationError") {
             res.status(400).json({
                 message: "Validation Failed.",
@@ -80,6 +87,7 @@ exports.createVehicleDriverLog = async (req, res) => {
 // update existing vehicle driver log
 exports.updateVehicleDriverLog = async (req, res) => {
     try{
+        Logger("Updating vehicle driver log", req, "vehicleDriverLogController")
         const updatedVehicleDriverLog = await VehicleDriverLog.findByIdAndUpdate(
             req.params.id,
             req.body,
@@ -97,6 +105,7 @@ exports.updateVehicleDriverLog = async (req, res) => {
         if (!updatedVehicleDriverLog) return res.status(404).json({message: "Vehicle driver log not found."})
         res.status(200).json(updatedVehicleDriverLog)
     } catch(error) {
+        Logger("Failed to update vehicle driver log", req, "vehicleDriverLogController", "error", error)
         res.status(400).json({message: error.message})
     }
 }
@@ -104,12 +113,14 @@ exports.updateVehicleDriverLog = async (req, res) => {
 // delete a vehicle driver log
 exports.deleteVehicleDriverLog = async (req, res) => {
     try{
+        Logger("Deleting vehicle driver log", req, "vehicleDriverLogController")
         const deletedVehicleDriverLog = await VehicleDriverLog.findByIdAndDelete(req.params.id)
 
         if (!deletedVehicleDriverLog) return res.status(404).json({message: "Vehicle driver log not found."})
 
         res.status(200).json({message: "Vehicle driver log deleted.", deletedVehicleDriverLog })
     } catch(error) {
+        Logger("Failed to delete vehicle driver log", req, "vehicleDriverLogController", "error", error)
         res.status(500).json({message: error.message})
     }
 }
@@ -117,6 +128,7 @@ exports.deleteVehicleDriverLog = async (req, res) => {
 // get all vehicle log by vehicle ID
 exports.getVehicleDriverLogsByVehicleId = async (req, res) => {
     try{
+        Logger("Fetching vehicle driver logs by vehicle ID", req, "vehicleDriverLogController")
         const vehicleDriverLogs = await VehicleDriverLog.find({ vehicleId: req.params.id})
             .populate({
                 path: "vehicleId",
@@ -130,6 +142,7 @@ exports.getVehicleDriverLogsByVehicleId = async (req, res) => {
 
         res.status(200).json(vehicleDriverLogs)
     } catch(error) {
+        Logger("Failed to fetch vehicle driver logs by vehicle ID", req, "vehicleDriverLogController", "error", error)
         res.status(500).json({message: error.message})
     }
 }
@@ -138,6 +151,7 @@ exports.getVehicleDriverLogsByVehicleId = async (req, res) => {
 // get all vehicle driver logs by employee ID
 exports.getVehicleDriverLogsByEmployeeId = async (req, res) => {
     try {
+        Logger("Fetching vehicle driver logs by employee ID", req, "vehicleDriverLogController")
         const vehicleDriverLogs = await VehicleDriverLog.find({employeeId: req.params.employeeId})
             .populate({
                 path: "vehicleId",
@@ -151,6 +165,7 @@ exports.getVehicleDriverLogsByEmployeeId = async (req, res) => {
 
             res.status(200).json(vehicleDriverLogs)
     } catch (error) {
+        Logger("Failed to fetch vehicle driver logs by employee ID", req, "vehicleDriverLogController", "error", error)
         res.status(500).json({message: error.message})
     }
 }
@@ -158,6 +173,7 @@ exports.getVehicleDriverLogsByEmployeeId = async (req, res) => {
 // get active vehicle driver logs
 exports.getActiveVehicleDriverLogs = async (req, res) => {
     try {
+        Logger("Fetching active vehicle driver logs", req, "vehicleDriverLogController")
         const activeVehicleDriverLogs = await VehicleDriverLog.find({status: "active"})
             .populate({
                 path: "vehicleId",
@@ -170,6 +186,7 @@ exports.getActiveVehicleDriverLogs = async (req, res) => {
         
         res.status(200).json(activeVehicleDriverLogs)
     } catch (error) {
+        Logger("Failed to fetch active vehicle driver logs", req, "vehicleDriverLogController", "error", error)
         res.status(500).json({message: error.message})
     }
 }
@@ -177,6 +194,7 @@ exports.getActiveVehicleDriverLogs = async (req, res) => {
 // complete a vehicle driver log assignment
 exports.completeVehicleDriverLog = async (req, res) => {
     try {
+        Logger("Completing vehicle driver log assignment", req, "vehicleDriverLogController")
         const {odometerReadingAtEnd, notes}  = req.body
 
         const updatedVehicleDriverLog = await VehicleDriverLog.findByIdAndUpdate(
@@ -202,6 +220,7 @@ exports.completeVehicleDriverLog = async (req, res) => {
         
         res.status(200).json(updatedVehicleDriverLog)
     } catch (error) {
+        Logger("Failed to complete vehicle driver log assignment", req, "vehicleDriverLogController", "error", error)
         res.status(500).json({message: error.message})
     }
 }

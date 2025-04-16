@@ -1,10 +1,12 @@
 const StockTransaction = require('../models/StockTransaction');
 const InventoryItem = require('../models/InventoryItem');
 const {STATUS_CODES} = require("../config/core")
+const Logger = require("../utils/logger");
 
 // Get all transactions with pagination and filtering
 exports.getAllTransactions = async (req, res) => {
   try {
+    Logger("Fetching all transactions", req, "stockTransactionController");
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 20;
     const skip = (page - 1) * limit;
@@ -45,6 +47,7 @@ exports.getAllTransactions = async (req, res) => {
       data: transactions
     });
   } catch (error) {
+    Logger("Failed to fetch transactions", req, "stockTransactionController", "error", error);
     res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: "Failed to fetch transactions",
@@ -56,6 +59,7 @@ exports.getAllTransactions = async (req, res) => {
 // Get single transaction by ID
 exports.getTransactionById = async (req, res) => {
   try {
+    Logger("Fetching transaction by ID", req, "stockTransactionController");
     const transaction = await StockTransaction.findById(req.params.id)
       .populate('item', 'itemCode itemDescription unitOfMeasure unitCost');
     
@@ -71,6 +75,7 @@ exports.getTransactionById = async (req, res) => {
       data: transaction
     });
   } catch (error) {
+    Logger("Failed to fetch transaction by ID", req, "stockTransactionController", "error", error);
     res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: 'Failed to fetch transaction',
@@ -85,6 +90,7 @@ exports.createTransaction = async (req, res) => {
   session.startTransaction();
 
   try {
+    Logger("Creating new transaction", req, "stockTransactionController");
     const { item, transactionType, quantity, location, reference } = req.body;
 
     // Validate item exists
@@ -141,6 +147,7 @@ exports.createTransaction = async (req, res) => {
       data: transaction
     });
   } catch (error) {
+    Logger("Failed to create transaction", req, "stockTransactionController", "error", error);
     await session.abortTransaction();
     session.endSession();
     
@@ -158,6 +165,7 @@ exports.updateTransaction = async (req, res) => {
   session.startTransaction();
 
   try {
+    Logger("Updating transaction", req, "stockTransactionController");
     const { id } = req.params;
     
     // Get the original transaction
@@ -230,6 +238,7 @@ exports.updateTransaction = async (req, res) => {
       data: updatedTransaction
     });
   } catch (error) {
+    Logger("Failed to update transaction", req, "stockTransactionController", "error", error);
     await session.abortTransaction();
     session.endSession();
     
@@ -247,6 +256,7 @@ exports.deleteTransaction = async (req, res) => {
   session.startTransaction();
 
   try {
+    Logger("Deleting transaction", req, "stockTransactionController");
     const { id } = req.params;
     
     // Get the transaction
@@ -304,6 +314,7 @@ exports.deleteTransaction = async (req, res) => {
       message: 'Transaction deleted successfully'
     });
   } catch (error) {
+    Logger("Failed to delete transaction", req, "stockTransactionController", "error", error);
     await session.abortTransaction();
     session.endSession();
     
@@ -318,6 +329,7 @@ exports.deleteTransaction = async (req, res) => {
 // Get inventory item stock balance
 exports.getItemStockBalance = async (req, res) => {
   try {
+    Logger("Fetching stock balance for item", req, "stockTransactionController");
     const { itemId } = req.params;
     
     const inventoryItem = await InventoryItem.findById(itemId).select('itemCode itemDescription quantityInStock reorderLevel');
@@ -388,6 +400,7 @@ exports.getItemStockBalance = async (req, res) => {
       }
     });
   } catch (error) {
+    Logger("Failed to fetch stock balance for item", req, "stockTransactionController", "error", error);
     res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: 'Failed to fetch stock balance',

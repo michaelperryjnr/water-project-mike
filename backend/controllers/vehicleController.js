@@ -1,8 +1,10 @@
 const Vehicle = require("../models/Vehicle");
+const Logger = require("../utils/logger");
 
 // Get all vehicles
 exports.getVehicles = async (req, res) => {
     try {
+        Logger("Fetching all vehicles", req, "vehicleController");
         const vehicles = await Vehicle.find()
             .populate('brand')
             .populate({
@@ -17,6 +19,7 @@ exports.getVehicles = async (req, res) => {
             .populate('roadWorth');
         res.status(200).json(vehicles);
     } catch (error) {
+        Logger("Failed to fetch vehicles", req, "vehicleController", "error", error);
         res.status(500).json({ message: error.message });
     }
 };
@@ -24,6 +27,7 @@ exports.getVehicles = async (req, res) => {
 // Get a single vehicle by ID
 exports.getVehicleById = async (req, res) => {
     try {
+        Logger("Fetching vehicle by ID", req, "vehicleController");
         const vehicle = await Vehicle.findById(req.params.id)
             .populate('brand')
             .populate({
@@ -40,6 +44,7 @@ exports.getVehicleById = async (req, res) => {
         if (!vehicle) return res.status(404).json({ message: 'Vehicle not found' });
         res.status(200).json(vehicle);
     } catch (error) {
+        Logger("Failed to fetch vehicle by ID", req, "vehicleController", "error", error);
         res.status(500).json({ message: error.message });
     }
 };
@@ -47,6 +52,7 @@ exports.getVehicleById = async (req, res) => {
 // Create a new vehicle
 exports.createVehicle = async (req, res) => {
     try {
+        Logger("Creating new vehicle", req, "vehicleController");
         if (req.fileValidationError) {
             return res.status(400).json({ message: req.fileValidationError });
         }
@@ -70,6 +76,7 @@ exports.createVehicle = async (req, res) => {
 
         res.status(201).json(populatedVehicle);
     } catch (error) {
+        Logger("Failed to create vehicle", req, "vehicleController", "error", error);
         console.error('Error creating vehicle:', error);
         if (error.code === 11000) {
             res.status(400).json({
@@ -93,6 +100,7 @@ exports.createVehicle = async (req, res) => {
 // Update an existing vehicle
 exports.updateVehicle = async (req, res) => {
     try {
+        Logger("Updating vehicle", req, "vehicleController");
         const vehicleData = req.body;
         if (req.files && req.files.length > 0) {
             const existingVehicle = await Vehicle.findById(req.params.id);
@@ -122,6 +130,7 @@ exports.updateVehicle = async (req, res) => {
         if (!updatedVehicle) return res.status(404).json({ message: 'Vehicle not found' });
         res.status(200).json(updatedVehicle);
     } catch (error) {
+        Logger("Failed to update vehicle", req, "vehicleController", "error", error);
         console.error('Error updating vehicle:', error);
         if (error.code === 11000) {
             res.status(400).json({
@@ -145,10 +154,12 @@ exports.updateVehicle = async (req, res) => {
 // Delete a vehicle
 exports.deleteVehicle = async (req, res) => {
     try {
+        Logger("Deleting vehicle", req, "vehicleController");
         const deletedVehicle = await Vehicle.findByIdAndDelete(req.params.id);
         if (!deletedVehicle) return res.status(404).json({ message: 'Vehicle not found' });
         res.status(200).json({ message: 'Vehicle deleted', deletedVehicle });
     } catch (error) {
+        Logger("Failed to delete vehicle", req, "vehicleController", "error", error);
         res.status(500).json({ message: error.message });
     }
 };
@@ -156,6 +167,7 @@ exports.deleteVehicle = async (req, res) => {
 // Get vehicles by status
 exports.getVehiclesByStatus = async (req, res) => {
     try {
+        Logger("Fetching vehicles by status", req, "vehicleController");
         const { status } = req.params;
         const vehicles = await Vehicle.find({ status })
             .populate('brand')
@@ -170,6 +182,7 @@ exports.getVehiclesByStatus = async (req, res) => {
         
         res.status(200).json(vehicles);
     } catch (error) {
+        Logger("Failed to fetch vehicles by status", req, "vehicleController", "error", error);
         res.status(500).json({ message: error.message });
     }
 };
@@ -177,6 +190,7 @@ exports.getVehiclesByStatus = async (req, res) => {
 // Get vehicles by department
 exports.getVehiclesByDepartment = async (req, res) => {
     try {
+        Logger("Fetching vehicles by department", req, "vehicleController");
         const { departmentId } = req.params;
         const vehicles = await Vehicle.find({ assignedDepartment: departmentId })
             .populate('brand')
@@ -191,6 +205,7 @@ exports.getVehiclesByDepartment = async (req, res) => {
         
         res.status(200).json(vehicles);
     } catch (error) {
+        Logger("Failed to fetch vehicles by department", req, "vehicleController", "error", error);
         res.status(500).json({ message: error.message });
     }
 };
@@ -198,6 +213,7 @@ exports.getVehiclesByDepartment = async (req, res) => {
 // Get vehicles by assigned driver
 exports.getVehiclesByDriver = async (req, res) => {
     try {
+        Logger("Fetching vehicles by driver", req, "vehicleController");
         const { driverId } = req.params;
         const vehicles = await Vehicle.find({ assignedDriver: driverId })
             .populate('brand')
@@ -212,6 +228,7 @@ exports.getVehiclesByDriver = async (req, res) => {
         
         res.status(200).json(vehicles);
     } catch (error) {
+        Logger("Failed to fetch vehicles by driver", req, "vehicleController", "error", error);
         res.status(500).json({ message: error.message });
     }
 };
@@ -219,6 +236,7 @@ exports.getVehiclesByDriver = async (req, res) => {
 // Get vehicles by brand
 exports.getVehiclesByBrand = async (req, res) => {
     try {
+        Logger("Fetching vehicles by brand", req, "vehicleController");
         const { brandId } = req.params;
         const vehicles = await Vehicle.find({ brand: brandId })
             .populate('brand')
@@ -233,6 +251,7 @@ exports.getVehiclesByBrand = async (req, res) => {
         
         res.status(200).json(vehicles);
     } catch (error) {
+        Logger("Failed to fetch vehicles by brand", req, "vehicleController", "error", error);
         res.status(500).json({ message: error.message });
     }
 };
@@ -240,6 +259,7 @@ exports.getVehiclesByBrand = async (req, res) => {
 // Get vehicles available for pool
 exports.getPoolVehicles = async (req, res) => {
     try {
+        Logger("Fetching vehicles available for pool", req, "vehicleController");
         const vehicles = await Vehicle.find({ 
             isAvailableForPool: true,
             status: 'available'
@@ -252,6 +272,7 @@ exports.getPoolVehicles = async (req, res) => {
         
         res.status(200).json(vehicles);
     } catch (error) {
+        Logger("Failed to fetch vehicles available for pool", req, "vehicleController", "error", error);
         res.status(500).json({ message: error.message });
     }
 };
@@ -259,6 +280,7 @@ exports.getPoolVehicles = async (req, res) => {
 // Update vehicle status
 exports.updateVehicleStatus = async (req, res) => {
     try {
+        Logger("Updating vehicle status", req, "vehicleController");
         const { status } = req.body;
         
         if (!status) {
@@ -283,6 +305,7 @@ exports.updateVehicleStatus = async (req, res) => {
         if (!updatedVehicle) return res.status(404).json({ message: 'Vehicle not found' });
         res.status(200).json(updatedVehicle);
     } catch (error) {
+        Logger("Failed to update vehicle status", req, "vehicleController", "error", error);
         res.status(400).json({ message: error.message });
     }
 };
@@ -290,6 +313,7 @@ exports.updateVehicleStatus = async (req, res) => {
 // Update vehicle mileage
 exports.updateVehicleMileage = async (req, res) => {
     try {
+        Logger("Updating vehicle mileage", req, "vehicleController");
         const { currentMileage } = req.body;
         
         if (!currentMileage) {
@@ -323,6 +347,7 @@ exports.updateVehicleMileage = async (req, res) => {
 
         res.status(200).json(updatedVehicle);
     } catch (error) {
+        Logger("Failed to update vehicle mileage", req, "vehicleController", "error", error);
         res.status(400).json({ message: error.message });
     }
 };
@@ -330,6 +355,7 @@ exports.updateVehicleMileage = async (req, res) => {
 // Remove picture from vehicle
 exports.removePicture = async (req, res) => {
     try {
+        Logger("Removing picture from vehicle", req, "vehicleController");
         const { pictureUrl } = req.body;
         
         if (!pictureUrl) {
@@ -359,6 +385,7 @@ exports.removePicture = async (req, res) => {
 
         res.status(200).json(updatedVehicle);
     } catch (error) {
+        Logger("Failed to remove picture from vehicle", req, "vehicleController", "error", error);
         res.status(400).json({ message: error.message });
     }
 };
@@ -366,6 +393,7 @@ exports.removePicture = async (req, res) => {
 // Assign driver to vehicle
 exports.assignDriver = async (req, res) => {
     try {
+        Logger("Assigning driver to vehicle", req, "vehicleController");
         const { driverId } = req.body;
         
         if (!driverId) {
@@ -393,6 +421,7 @@ exports.assignDriver = async (req, res) => {
         if (!updatedVehicle) return res.status(404).json({ message: 'Vehicle not found' });
         res.status(200).json(updatedVehicle);
     } catch (error) {
+        Logger("Failed to assign driver to vehicle", req, "vehicleController", "error", error);
         res.status(400).json({ message: error.message });
     }
 };
@@ -400,6 +429,7 @@ exports.assignDriver = async (req, res) => {
 // Unassign driver from vehicle
 exports.unassignDriver = async (req, res) => {
     try {
+        Logger("Unassigning driver from vehicle", req, "vehicleController");
         const updatedVehicle = await Vehicle.findByIdAndUpdate(
             req.params.id,
             { 
@@ -417,6 +447,7 @@ exports.unassignDriver = async (req, res) => {
         if (!updatedVehicle) return res.status(404).json({ message: 'Vehicle not found' });
         res.status(200).json(updatedVehicle);
     } catch (error) {
+        Logger("Failed to unassign driver from vehicle", req, "vehicleController", "error", error);
         res.status(400).json({ message: error.message });
     }
 };

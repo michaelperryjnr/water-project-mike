@@ -1,9 +1,11 @@
 const TaxRate = require('../models/TaxRate');
 const {STATUS_CODES} = require("../config/core")
+const Logger = require("../utils/logger");
 
 // Get all tax rates with optional filtering
 exports.getAllTaxRates = async (req, res) => {
   try {
+    Logger("Fetching all tax rates", req, "taxRateController");
     // Build filter
     const filter = {};
     
@@ -34,6 +36,7 @@ exports.getAllTaxRates = async (req, res) => {
       data: taxRates
     });
   } catch (error) {
+    Logger("Failed to fetch tax rates", req, "taxRateController", "error", error);
     res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: "Failed to fetch tax rates",
@@ -45,6 +48,7 @@ exports.getAllTaxRates = async (req, res) => {
 // Get single tax rate by ID
 exports.getTaxRateById = async (req, res) => {
   try {
+    Logger("Fetching tax rate by ID", req, "taxRateController");
     const taxRate = await TaxRate.findById(req.params.id);
     
     if (!taxRate) {
@@ -59,6 +63,7 @@ exports.getTaxRateById = async (req, res) => {
       data: taxRate
     });
   } catch (error) {
+    Logger("Failed to fetch tax rate by ID", req, "taxRateController", "error", error);
     res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: 'Failed to fetch tax rate',
@@ -70,6 +75,7 @@ exports.getTaxRateById = async (req, res) => {
 // Create new tax rate
 exports.createTaxRate = async (req, res) => {
   try {
+    Logger("Creating new tax rate", req, "taxRateController");
     const { name, rate, appliesTo } = req.body;
     
     // Check if tax rate with the same name already exists
@@ -95,6 +101,7 @@ exports.createTaxRate = async (req, res) => {
       data: taxRate
     });
   } catch (error) {
+    Logger("Failed to create new tax rate", req, "taxRateController", "error", error);
     res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: 'Failed to create tax rate',
@@ -106,6 +113,7 @@ exports.createTaxRate = async (req, res) => {
 // Update tax rate
 exports.updateTaxRate = async (req, res) => {
   try {
+    Logger("Updating tax rate", req, "taxRateController");
     const { id } = req.params;
     const { name, rate, appliesTo } = req.body;
     
@@ -142,6 +150,7 @@ exports.updateTaxRate = async (req, res) => {
       data: updatedTaxRate
     });
   } catch (error) {
+    Logger("Failed to update tax rate", req, "taxRateController", "error", error);
     res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: 'Failed to update tax rate',
@@ -153,6 +162,7 @@ exports.updateTaxRate = async (req, res) => {
 // Delete tax rate
 exports.deleteTaxRate = async (req, res) => {
   try {
+    Logger("Deleting tax rate", req, "taxRateController");
     const { id } = req.params;
     
     // Check if tax rate is being referenced by inventory items
@@ -180,6 +190,7 @@ exports.deleteTaxRate = async (req, res) => {
       message: 'Tax rate deleted successfully'
     });
   } catch (error) {
+    Logger("Failed to delete tax rate", req, "taxRateController", "error", error);
     res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: 'Failed to delete tax rate',
@@ -191,6 +202,7 @@ exports.deleteTaxRate = async (req, res) => {
 // Bulk create tax rates
 exports.bulkCreateTaxRates = async (req, res) => {
   try {
+    Logger("Bulk creating tax rates", req, "taxRateController");
     const taxRates = req.body;
     
     if (!Array.isArray(taxRates) || taxRates.length === 0) {
@@ -251,6 +263,7 @@ exports.bulkCreateTaxRates = async (req, res) => {
       data: createdTaxRates
     });
   } catch (error) {
+    Logger("Failed to bulk create tax rates", req, "taxRateController", "error", error);
     res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: 'Failed to create tax rates',
@@ -262,6 +275,7 @@ exports.bulkCreateTaxRates = async (req, res) => {
 // Calculate tax amount based on value and tax rate ID
 exports.calculateTax = async (req, res) => {
   try {
+    Logger("Calculating tax", req, "taxRateController");
     const { taxRateId, value, type } = req.body;
     
     if (!taxRateId || value === undefined) {
@@ -311,6 +325,7 @@ exports.calculateTax = async (req, res) => {
       }
     });
   } catch (error) {
+    Logger("Failed to calculate tax", req, "taxRateController", "error", error);
     res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: 'Failed to calculate tax',

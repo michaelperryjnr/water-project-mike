@@ -1,10 +1,12 @@
 const Supplier = require('../models/Supplier');
 const InventoryItem = require('../models/InventoryItem');
 const {STATUS_CODES} = require("../config/core")
+const Logger = require("../utils/logger");
 
 // Get all suppliers with pagination
 exports.getAllSuppliers = async (req, res) => {
   try {
+    Logger("Fetching all suppliers", req, "supplierController");
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
@@ -32,6 +34,7 @@ exports.getAllSuppliers = async (req, res) => {
       data: suppliers
     });
   } catch (error) {
+    Logger("Failed to fetch suppliers", req, "supplierController", "error", error);
     res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: "Failed to fetch suppliers",
@@ -43,6 +46,7 @@ exports.getAllSuppliers = async (req, res) => {
 // Get supplier by ID
 exports.getSupplierById = async (req, res) => {
   try {
+    Logger("Fetching supplier by ID", req, "supplierController");
     const supplier = await Supplier.findById(req.params.id);
     
     if (!supplier) {
@@ -65,6 +69,7 @@ exports.getSupplierById = async (req, res) => {
       }
     });
   } catch (error) {
+    Logger("Failed to fetch supplier by ID", req, "supplierController", "error", error);
     res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: "Failed to fetch supplier",
@@ -76,6 +81,7 @@ exports.getSupplierById = async (req, res) => {
 // Create a new supplier
 exports.createSupplier = async (req, res) => {
   try {
+    Logger("Creating new supplier", req, "supplierController");
     const newSupplier = await Supplier.create(req.body);
     
     res.status(STATUS_CODES.CREATED).json({
@@ -114,6 +120,7 @@ exports.updateSupplier = async (req, res) => {
       data: updatedSupplier
     });
   } catch (error) {
+    Logger("Failed to update supplier", req, "supplierController", "error", error);
     res.status(STATUS_CODES.BAD_REQUEST).json({
       success: false,
       message: "Failed to update supplier",
@@ -125,6 +132,7 @@ exports.updateSupplier = async (req, res) => {
 // Delete a supplier
 exports.deleteSupplier = async (req, res) => {
   try {
+    Logger("Deleting supplier", req, "supplierController");
     const supplier = await Supplier.findById(req.params.id);
     
     if (!supplier) {
@@ -162,6 +170,7 @@ exports.deleteSupplier = async (req, res) => {
       message: "Supplier deleted successfully"
     });
   } catch (error) {
+    Logger("Failed to delete supplier", req, "supplierController", "error", error);
     res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: "Failed to delete supplier",
@@ -173,6 +182,7 @@ exports.deleteSupplier = async (req, res) => {
 // Change supplier status (active/inactive)
 exports.changeSupplierStatus = async (req, res) => {
   try {
+    Logger("Changing supplier status", req, "supplierController");
     const { status } = req.body;
     
     if (!status || !['Active', 'Inactive'].includes(status)) {
@@ -200,6 +210,7 @@ exports.changeSupplierStatus = async (req, res) => {
       data: supplier
     });
   } catch (error) {
+    Logger("Failed to change supplier status", req, "supplierController", "error", error);
     res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: "Failed to change supplier status",

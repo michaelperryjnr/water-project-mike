@@ -1,12 +1,15 @@
 const RoadWorth = require("../models/RoadWorth");
 const { STATUS_CODES } = require("../config/core");
+const Logger = require("../utils/logger");
 
 // Get all road worthiness certificates
 exports.getAllRoadWorth = async (req, res) => {
   try {
+    Logger("Fetching all road worthiness certificates", req, "roadWorthController");
     const roadWorth = await RoadWorth.find();
     res.status(STATUS_CODES.OK).json(roadWorth);
   } catch (error) {
+    Logger("Failed to fetch road worthiness certificates", req, "roadWorthController", "error", error);
     return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ message: error.message });
   }
 };
@@ -14,6 +17,7 @@ exports.getAllRoadWorth = async (req, res) => {
 // Get road worthiness certificate by ID
 exports.getRoadWorthById = async (req, res) => {
   try {
+    Logger("Fetching road worthiness certificate by ID", req, "roadWorthController");
     const roadWorth = await RoadWorth.findById(req.params.id);
 
     if (!roadWorth) {
@@ -22,6 +26,7 @@ exports.getRoadWorthById = async (req, res) => {
 
     res.status(STATUS_CODES.OK).json(roadWorth);
   } catch (error) {
+    Logger("Failed to fetch road worthiness certificate by ID", req, "roadWorthController", "error", error);
     return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ message: error.message });
   }
 };
@@ -29,6 +34,7 @@ exports.getRoadWorthById = async (req, res) => {
 // Create new road worthiness certificate
 exports.createRoadWorth = async (req, res) => {
   try {
+    Logger("Creating new road worthiness certificate", req, "roadWorthController");
     // Validate dates
     if (new Date(req.body.startDate) >= new Date(req.body.endDate)) {
       return res.status(STATUS_CODES.BAD_REQUEST).json({
@@ -41,6 +47,7 @@ exports.createRoadWorth = async (req, res) => {
 
     res.status(STATUS_CODES.CREATED).json(roadWorth);
   } catch (error) {
+    Logger("Failed to create new road worthiness certificate", req, "roadWorthController", "error", error);
     if (error.name === "ValidationError") {
       return res.status(STATUS_CODES.BAD_REQUEST).json({ message: error.message });
     }
@@ -53,6 +60,7 @@ exports.createRoadWorth = async (req, res) => {
 
 // Update road worthiness certificate
 exports.updateRoadWorth = async (req, res) => {
+  Logger("Updating road worthiness certificate", req, "roadWorthController");
   try {
     // Validate dates if both are provided
     if (req.body.startDate && req.body.endDate && 
@@ -74,6 +82,7 @@ exports.updateRoadWorth = async (req, res) => {
 
     res.status(STATUS_CODES.OK).json(roadWorth);
   } catch (error) {
+    Logger("Failed to update road worthiness certificate", req, "roadWorthController", "error", error);
     if (error.name === "ValidationError") {
       return res.status(STATUS_CODES.BAD_REQUEST).json({ message: error.message });
     }
@@ -87,6 +96,7 @@ exports.updateRoadWorth = async (req, res) => {
 // Delete road worthiness certificate
 exports.deleteRoadWorth = async (req, res) => {
   try {
+    Logger("Deleting road worthiness certificate", req, "roadWorthController");
     const roadWorth = await RoadWorth.findByIdAndDelete(req.params.id);
     
     if (!roadWorth) {
@@ -95,6 +105,7 @@ exports.deleteRoadWorth = async (req, res) => {
 
     res.status(STATUS_CODES.OK).json({ message: "Road worthiness certificate deleted." });
   } catch (error) {
+    Logger("Failed to delete road worthiness certificate", req, "roadWorthController", "error", error);
     return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ message: error.message });
   }
 };
@@ -102,6 +113,7 @@ exports.deleteRoadWorth = async (req, res) => {
 // Get certificates expiring within a given date range
 exports.getExpiringCertificates = async (req, res) => {
   try {
+    Logger("Fetching expiring road worthiness certificates", req, "roadWorthController");
     const { startDate, endDate } = req.query;
     
     if (!startDate || !endDate) {
@@ -117,6 +129,7 @@ exports.getExpiringCertificates = async (req, res) => {
     
     res.status(STATUS_CODES.OK).json(certificates);
   } catch (error) {
+    Logger("Failed to fetch expiring road worthiness certificates", req, "roadWorthController", "error", error);
     return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ message: error.message });
   }
 };
@@ -124,6 +137,7 @@ exports.getExpiringCertificates = async (req, res) => {
 // Get certificates by issuing authority
 exports.getCertificatesByIssuer = async (req, res) => {
   try {
+    Logger("Fetching road worthiness certificates by issuer", req, "roadWorthController");
     const { issuer } = req.params;
     
     const certificates = await RoadWorth.find({ issuedBy: issuer.toLowerCase() });
@@ -134,6 +148,7 @@ exports.getCertificatesByIssuer = async (req, res) => {
     
     res.status(STATUS_CODES.OK).json(certificates);
   } catch (error) {
+    Logger("Failed to fetch road worthiness certificates by issuer", req, "roadWorthController", "error", error);
     return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ message: error.message });
   }
 };

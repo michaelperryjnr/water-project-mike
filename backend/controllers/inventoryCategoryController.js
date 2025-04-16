@@ -1,10 +1,12 @@
 const InventoryCategory = require('../models/InventoryCategory');
 const InventoryItem = require('../models/InventoryItem');
 const {STATUS_CODES} = require("../config/core")
+const Logger = require("../utils/logger")
 
 // Get all categories
 exports.getAllCategories = async (req, res) => {
   try {
+    Logger("Fetching all categories", req, "inventoryCategoryController", "info")
     const categories = await InventoryCategory.find()
       .populate('parentCategory', 'name');
     
@@ -14,6 +16,7 @@ exports.getAllCategories = async (req, res) => {
       data: categories
     });
   } catch (error) {
+    Logger("Failed to fetch categories", req, "inventoryCategoryController", "error", error)
     res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: "Failed to fetch categories",
@@ -25,6 +28,7 @@ exports.getAllCategories = async (req, res) => {
 // Get category by ID
 exports.getCategoryById = async (req, res) => {
   try {
+    Logger("Fetching category by ID", req, "inventoryCategoryController")
     const category = await InventoryCategory.findById(req.params.id)
       .populate('parentCategory', 'name');
     
@@ -54,6 +58,7 @@ exports.getCategoryById = async (req, res) => {
       }
     });
   } catch (error) {
+    Logger("Error fetching category by ID", req, "inventoryCategoryController", "error", error)
     res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: "Failed to fetch category",
@@ -65,6 +70,7 @@ exports.getCategoryById = async (req, res) => {
 // Create a new category
 exports.createCategory = async (req, res) => {
   try {
+    Logger("Creating new category", req, "inventoryCategoryController")
     // If parentCategory is provided, check if it exists
     if (req.body.parentCategory) {
       const parentExists = await InventoryCategory.findById(req.body.parentCategory);
@@ -83,6 +89,7 @@ exports.createCategory = async (req, res) => {
       data: newCategory
     });
   } catch (error) {
+    Logger("Error creating category", req, "inventoryCategoryController", "error", error)
     res.status(STATUS_CODES.BAD_REQUEST).json({
       success: false,
       message: "Failed to create category",
@@ -94,6 +101,7 @@ exports.createCategory = async (req, res) => {
 // Update a category
 exports.updateCategory = async (req, res) => {
   try {
+    Logger("Updating category", req, "inventoryCategoryController")
     // Check if category exists
     const category = await InventoryCategory.findById(req.params.id);
     if (!category) {
@@ -145,6 +153,7 @@ exports.updateCategory = async (req, res) => {
       data: updatedCategory
     });
   } catch (error) {
+    Logger("Error updating category", req, "inventoryCategoryController", "error", error)
     res.status(STATUS_CODES.BAD_REQUEST).json({
       success: false,
       message: "Failed to update category",
@@ -157,6 +166,7 @@ exports.updateCategory = async (req, res) => {
 exports.deleteCategory = async (req, res) => {
   try {
     // Check if category exists
+    Logger("Deleting category", req, "inventoryCategoryController")
     const category = await InventoryCategory.findById(req.params.id);
     if (!category) {
       return res.status(STATUS_CODES.NOT_FOUND).json({
@@ -196,6 +206,7 @@ exports.deleteCategory = async (req, res) => {
       message: "Category deleted successfully"
     });
   } catch (error) {
+    Logger("Error deleting category", req, "inventoryCategoryController", "error", error)
     res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: "Failed to delete category",
@@ -207,6 +218,7 @@ exports.deleteCategory = async (req, res) => {
 // Get category hierarchy
 exports.getCategoryHierarchy = async (req, res) => {
   try {
+    Logger("Fetching category hierarchy", req, "inventoryCategoryController")
     // Get all root categories (those without a parent)
     const rootCategories = await InventoryCategory.find({ 
       parentCategory: null 
@@ -249,6 +261,7 @@ exports.getCategoryHierarchy = async (req, res) => {
       data: categoryTree
     });
   } catch (error) {
+    Logger("Error fetching category hierarchy", req, "inventoryCategoryController", "error", error)
     res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: "Failed to fetch category hierarchy",

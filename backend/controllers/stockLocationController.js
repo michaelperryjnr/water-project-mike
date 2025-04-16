@@ -2,10 +2,12 @@ const StockLocation = require('../models/StockLocation');
 const InventoryItem = require('../models/InventoryItem');
 const StockTransaction = require('../models/StockTransaction');
 const { STATUS_CODES } = require("../config/core");
+const Logger = require("../utils/logger");
 
 // Get stock by location
 exports.getStockByLocation = async (req, res) => {
   try {
+    Logger("Fetching stock by location", req, "stockLocationController");
     const { location } = req.params;
     
     // Validate location
@@ -49,6 +51,7 @@ exports.getStockByLocation = async (req, res) => {
       data: stockItems
     });
   } catch (error) {
+    Logger("Failed to fetch stock by location", req, "stockLocationController", "error", error);
     res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: "Failed to fetch stock by location",
@@ -60,6 +63,7 @@ exports.getStockByLocation = async (req, res) => {
 // Get stock by item
 exports.getStockByItem = async (req, res) => {
   try {
+    Logger("Fetching stock by item", req, "stockLocationController");
     const { itemId } = req.params;
     
     // Check if item exists
@@ -93,6 +97,7 @@ exports.getStockByItem = async (req, res) => {
       }
     });
   } catch (error) {
+    Logger("Failed to fetch stock by item", req, "stockLocationController", "error", error);
     res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: "Failed to fetch stock by item",
@@ -104,6 +109,7 @@ exports.getStockByItem = async (req, res) => {
 // Transfer stock between locations
 exports.transferStock = async (req, res) => {
   try {
+    Logger("Transferring stock", req, "stockLocationController");
     const { itemId } = req.params;
     const { fromLocation, toLocation, quantity, reason } = req.body;
     
@@ -205,6 +211,7 @@ exports.transferStock = async (req, res) => {
       }
     });
   } catch (error) {
+    Logger("Failed to transfer stock", req, "stockLocationController", "error", error);
     res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: "Failed to transfer stock",

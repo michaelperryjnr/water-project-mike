@@ -3,6 +3,7 @@ const InventoryItem = require('../models/InventoryItem');
 const StockTransaction = require('../models/StockTransaction');
 const mongoose = require('mongoose');
 const {STATUS_CODES} = require("../config/core")
+const Logger = require("../utils/logger")
 
 // Generate a unique order number
 const generateOrderNumber = async () => {
@@ -28,6 +29,7 @@ const generateOrderNumber = async () => {
 // Get all sales orders with pagination and filtering
 exports.getAllSalesOrders = async (req, res) => {
   try {
+    Logger("Fetching all sales orders", req, "salesOrderController")
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 20;
     const skip = (page - 1) * limit;
@@ -80,6 +82,7 @@ exports.getAllSalesOrders = async (req, res) => {
       data: salesOrders
     });
   } catch (error) {
+    Logger("Failed to fetch sales orders", req, "salesOrderController", "error", error)
     res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: "Failed to fetch sales orders",
@@ -91,6 +94,7 @@ exports.getAllSalesOrders = async (req, res) => {
 // Get single sales order by ID
 exports.getSalesOrderById = async (req, res) => {
   try {
+    Logger("Fetching sales order by ID", req, "salesOrderController")
     const salesOrder = await SalesOrder.findById(req.params.id)
       .populate('items.item', 'itemCode itemDescription unitOfMeasure saleable');
     
@@ -106,6 +110,7 @@ exports.getSalesOrderById = async (req, res) => {
       data: salesOrder
     });
   } catch (error) {
+    Logger("Failed to fetch sales order by ID", req, "salesOrderController", "error", error)
     res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: 'Failed to fetch sales order',
@@ -120,6 +125,7 @@ exports.createSalesOrder = async (req, res) => {
   session.startTransaction();
 
   try {
+    Logger("Creating new sales order", req, "salesOrderController")
     const { 
       customer, 
       items, 
@@ -238,6 +244,7 @@ exports.createSalesOrder = async (req, res) => {
       data: salesOrder
     });
   } catch (error) {
+    Logger("Failed to create sales order", req, "salesOrderController", "error", error)
     await session.abortTransaction();
     session.endSession();
     
@@ -255,6 +262,7 @@ exports.updateSalesOrder = async (req, res) => {
   session.startTransaction();
 
   try {
+    Logger("Updating sales order", req, "salesOrderController")
     const { id } = req.params;
     
     // Get original sales order
@@ -325,6 +333,7 @@ exports.updateSalesOrder = async (req, res) => {
       data: updatedOrder
     });
   } catch (error) {
+    Logger("Failed to update sales order", req, "salesOrderController", "error", error)
     await session.abortTransaction();
     session.endSession();
     
@@ -342,6 +351,7 @@ exports.deleteSalesOrder = async (req, res) => {
   session.startTransaction();
 
   try {
+    Logger("Deleting sales order", req, "salesOrderController")
     const { id } = req.params;
     
     const salesOrder = await SalesOrder.findById(id)
@@ -394,6 +404,7 @@ exports.deleteSalesOrder = async (req, res) => {
       message: 'Sales order deleted successfully'
     });
   } catch (error) {
+    Logger("Failed to delete sales order", req, "salesOrderController", "error", error)
     await session.abortTransaction();
     session.endSession();
     
@@ -408,6 +419,7 @@ exports.deleteSalesOrder = async (req, res) => {
 // Get sales summary statistics
 exports.getSalesSummary = async (req, res) => {
   try {
+    Logger("Fetching sales summary", req, "salesOrderController")
     const { startDate, endDate } = req.query;
     
     const dateFilter = {};
@@ -505,6 +517,7 @@ exports.getSalesSummary = async (req, res) => {
       }
     });
   } catch (error) {
+    Logger("Failed to fetch sales summary", req, "salesOrderController", "error", error)
     res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: 'Failed to fetch sales summary',
@@ -516,6 +529,7 @@ exports.getSalesSummary = async (req, res) => {
 // Get customer purchase history
 exports.getCustomerPurchaseHistory = async (req, res) => {
   try {
+    Logger("Fetching customer purchase history", req, "salesOrderController")
     const { customerName, customerEmail } = req.query;
     
     if (!customerName && !customerEmail) {
@@ -571,6 +585,7 @@ exports.getCustomerPurchaseHistory = async (req, res) => {
       }
     });
   } catch (error) {
+    Logger("Failed to fetch customer purchase history", req, "salesOrderController", "error", error)
     res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: 'Failed to fetch customer purchase history',

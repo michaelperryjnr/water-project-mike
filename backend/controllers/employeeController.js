@@ -1,9 +1,11 @@
 // controllers/employeeController.js
 const Employee = require('../models/Employee');
+const Logger = require('../utils/logger');
 
 // Get all employees
 exports.getEmployees = async (req, res) => {
     try {
+        Logger("Fetched all employees", req, "employeeController", "info")
         const employees = await Employee.find()
             .populate({
                 path: 'nextOfKin',
@@ -22,6 +24,7 @@ exports.getEmployees = async (req, res) => {
             .populate('contractType'); // Populating Contract Type
         res.status(200).json(employees);
     } catch (error) {
+        Logger("Error fetching employees", req, "employeeController", "error", error)
         res.status(500).json({ message: error.message });
     }
 };
@@ -49,6 +52,7 @@ exports.getEmployees = async (req, res) => {
 // Get a single employee by ID
 exports.getEmployeeById = async (req, res) => {
     try {
+        Logger("Fetched employee by ID", req, "employeeController", "info")
         const employee = await Employee.findById(req.params.id)
 /*             .populate('nextOfKin')  // Populating NextOfKin
             .populate('position')   // Populating Position
@@ -72,10 +76,10 @@ exports.getEmployeeById = async (req, res) => {
                 select: 'name code continent capital flag'
             })     // Populating Country
             .populate('contractType'); // Populating Contract Type
-
         if (!employee) return res.status(404).json({ message: 'Employee not found' });
         res.status(200).json(employee);
     } catch (error) {
+        Logger("Error fetching employee by ID", req, "employeeController", "error", error)
         res.status(500).json({ message: error.message });
     }
 };
@@ -117,6 +121,7 @@ exports.getEmployeeById = async (req, res) => {
 // Create a new employee
 exports.createEmployee = async (req, res) => {
   try {
+    Logger("Creating new employee", req, "employeeController", "info")
     // Check for multer errors
     if (req.fileValidationError) {
       return res.status(400).json({ message: req.fileValidationError });
@@ -131,7 +136,6 @@ exports.createEmployee = async (req, res) => {
     if (req.file) {
       employeeData.picture = `/uploads/${req.file.filename}`; // Note: Changed 'image' to 'picture' to match schema
     }
-
     const newEmployee = new Employee(employeeData);
     const savedEmployee = await newEmployee.save();
 
@@ -147,7 +151,7 @@ exports.createEmployee = async (req, res) => {
 
     res.status(201).json(populatedEmployee);
   } catch (error) {
-    console.error('Error creating employee:', error);
+    Logger("Error creating employee", req, "employeeController", "error", error)
     if (error.code === 11000) {
       res.status(400).json({
         message: 'Duplicate key error. A record with this email or staff number already exists.',
@@ -181,6 +185,7 @@ exports.updateEmployee = async (req, res) => {
 // Update an existing employee
 exports.updateEmployee = async (req, res) => {
     try {
+        Logger("Updating employee", req, "employeeController", "info")
         const updatedEmployee = await Employee.findByIdAndUpdate(req.params.id, req.body, { new: true })
             .populate('nextOfKin')  // Populating NextOfKin after update
             .populate('position')   // Populating Position after update
@@ -192,6 +197,7 @@ exports.updateEmployee = async (req, res) => {
         if (!updatedEmployee) return res.status(404).json({ message: 'Employee not found' });
         res.status(200).json(updatedEmployee);
     } catch (error) {
+        Logger("Error updating employee", req, "employeeController", "error", error)
         res.status(400).json({ message: error.message });
     }
 };
@@ -199,10 +205,12 @@ exports.updateEmployee = async (req, res) => {
 // Delete an employee
 exports.deleteEmployee = async (req, res) => {
     try {
+        Logger("Deleting employee", req, "employeeController", "info")
         const deletedEmployee = await Employee.findByIdAndDelete(req.params.id);
         if (!deletedEmployee) return res.status(404).json({ message: 'Employee not found' });
         res.status(200).json({ message: 'Employee deleted', deletedEmployee });
     } catch (error) {
+        Logger("Error deleting employee", req, "employeeController", "error", error)
         res.status(500).json({ message: error.message });
     }
 };
