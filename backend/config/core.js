@@ -8,6 +8,7 @@ const CONFIG = {
     MONGO_URI: process.env.MONGO_URI,
     PORT: process.env.PORT,
     LOG_LEVEL: process.env.LOG_LEVEL,
+    ENV: process.env.NODE_ENV,
 }
 const STATUS_CODES = {
     BAD_REQUEST: 400,
@@ -19,5 +20,14 @@ const STATUS_CODES = {
     OK: 200
 }
 
+const CORS_CONFIG = {
+    allowedOrigins: process.env.ALLOWED_ORIGINS.split(","),
+    allowedMethods: process.env.ALLOWED_METHODS.split(","),
+    allowedHeaders: process.env.ALLOWED_HEADERS.split(","),
+    credentials: process.env.CREDENTIALS === "true",
+    allowedLocalOrigins: process.env.ALLOWED_LOCAL_ORIGINS.split(","),
+    maxAge: parseInt(process.env.MAX_AGE),
+}
 
-module.exports = {STATUS_CODES, CONFIG}
+
+module.exports = {STATUS_CODES, CONFIG, CORS_CONFIG}
