@@ -7,6 +7,8 @@ const multer = require("multer"); // Add multer
 const path = require("path"); // For handling file paths
 const fs = require("fs");
 const uploadMiddleware = require("./middlewares/uploadMiddleware")
+const {ErrorHandler, Logger} = require("./middlewares/loggerMiddleware")
+const {apiLimiter} = require("./middlewares/rateLimiterMiddleware")
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -24,6 +26,13 @@ function startServer() {
   try {
     app.use(cors());
     app.use(express.json());
+
+    // Error Handling & Logging Middleware
+    app.use(ErrorHandler)
+    app.use(Logger)
+    app.use(apiLimiter)
+
+    // API Docs
     app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
     // server.js (add this before the routes)
@@ -76,6 +85,27 @@ function startServer() {
 
     const roadWorthRoutes = require("./routes/roadWorthRoutes")
     app.use("/api/roadworth", roadWorthRoutes)
+
+    const inventoryItemsRoutes = require("./routes/inventoryItemsRoute")
+    app.use("/api/items", inventoryItemsRoutes)
+
+    const inventoryCategoryRoutes = require("./routes/inventoryCategoryRoutes")
+    app.use("/api/categories", inventoryCategoryRoutes)
+
+    const stockLocationRoutes = require("./routes/stockLocationRoutes")
+    app.use("/api/stock", stockLocationRoutes)
+
+    const stockTransactionsRoute = require("./routes/stockTransactionRoute")
+    app.use("/api/stock-transactions", stockTransactionsRoute)
+
+    const taxRateRoutes = require("./routes/taxRateRoutes")
+    app.use("/api/tax-rates", taxRateRoutes)
+
+    const salesOrderRoutes = require("./routes/salesOrderRoutes")
+    app.use("/api/sales-orders", salesOrderRoutes)
+
+    const supplierRoutes = require("./routes/supplierRoutes")
+    app.use("/api/suppliers", supplierRoutes)
 
     //Start the server
     const server = app.listen(port, () =>
