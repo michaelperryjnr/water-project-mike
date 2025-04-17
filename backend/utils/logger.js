@@ -2,18 +2,18 @@ const { logger } = require("../middlewares/loggerMiddleware");
 
 function Logger(
   message,
-  req,
+  req=null,
   component = "unknown",
   level = "info",
   error = null
 ) {
-  const correlationId =
-    req.headers["x-correlation-id"] ||
-    req.headers["x-request-id"] ||
+  const correlationId = 
+    req?.headers["x-correlation-id"] ||
+    req?.headers["x-request-id"] ||
     `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-  const userId = req.user?.id || "anonymous";
-  const ip = req.ip || "unknown";
-  const userAgent = req.headers["user-agent"] || "Unknown";
+  const userId = req?.user?.id || "anonymous";
+  const ip = req?.ip || "unknown";
+  const userAgent = req?.headers["user-agent"] || "Unknown";
 
   if (level === "error") {
     logger.error(message, {
