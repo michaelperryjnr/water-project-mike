@@ -2,11 +2,12 @@ const axios = require("axios");
 const cheerio = require("cheerio");
 const mongoose = require("mongoose");
 require("../models/Brand");
+const {CONFIG} = require("../config/core")
 
 // MongoDB connection
 const connectDB = async () => {
   try {
-    await mongoose.connect("mongodb://localhost:27017/water_backend");
+    await mongoose.connect(CONFIG.MONGO_URI);
     console.log("Connected to MongoDB");
   } catch (error) {
     console.error("MongoDB connection failed:", error.message);

@@ -1,9 +1,10 @@
 const axios = require('axios');
 const mongoose = require('mongoose');
 const Nationality = require('../models/Nationality'); // Adjust the path based on where your model is
+const {CONFIG} = require("../config/core")
 
 // MongoDB connection
-mongoose.connect('mongodb://localhost:27017/water_backend', { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect(CONFIG.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log('Connected to MongoDB'))
   .catch((err) => console.error('MongoDB connection error:', err));
 
