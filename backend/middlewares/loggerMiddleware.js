@@ -51,7 +51,12 @@ const logger = createLogger({
  * Logs errors and returns standardized response
  */
 function ErrorHandler(err, req, res, next) {
-    const correlationId = req.headers['x-correlation-id'] || req.headers['x-request-id'] || 'unknown';
+    // Skip sending a response if headers already sent
+    if (res.headersSent) {
+        return next(err);
+    }
+    
+    const correlationId = req.headers['x-correlation-id'] || req.headers['x-request-id'] || `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const userId = req.user?.id || 'anonymous';
     
     logger.error(`Request failed | URL: ${req.originalUrl} | Method: ${req.method}`, {
@@ -70,8 +75,6 @@ function ErrorHandler(err, req, res, next) {
         error: err.expose ? err.message : "Something went wrong. Please try again later.",
         requestId: correlationId
     });
-
-    next(err);
 }
 
 /**
@@ -84,9 +87,6 @@ function Logger(req, res, next) {
         const correlationId = req.headers['x-correlation-id'] || 
                              req.headers['x-request-id'] || 
                              `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-        
-        // Add correlation ID to response headers
-        res.setHeader('x-correlation-id', correlationId);
         
         const startTime = Date.now();
         const { method, originalUrl, ip } = req;
@@ -112,7 +112,6 @@ function Logger(req, res, next) {
                 userId: userId,
                 statusCode: res.statusCode,
                 responseTime: duration,
-                contentLength: res.get('Content-Length') || 0,
                 component: 'request-logger'
             });
         });
