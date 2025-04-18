@@ -1,3 +1,5 @@
+require("dotenv").config();
+console.log("MONGO_URI in index.js:", process.env.MONGO_URI); // Debug log
 const { connectDB, disconnectDB } = require("./config/db");
 const { startServer, stopServer } = require("./server");
 const Logger = require("./utils/logger")

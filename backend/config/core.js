@@ -1,5 +1,3 @@
-require("dotenv").config()
-
 const CONFIG = {
     ACCESS_TOKEN_SECRET: process.env.ACCESS_TOKEN_SECRET,
     REFRESH_TOKEN_SECRET: process.env.REFRESH_TOKEN_SECRET,
@@ -20,13 +18,14 @@ const STATUS_CODES = {
     OK: 200
 }
 
+// Default values for CORS if the environment variables are not set
 const CORS_CONFIG = {
-    allowedOrigins: process.env.ALLOWED_ORIGINS.split(","),
-    allowedMethods: process.env.ALLOWED_METHODS.split(","),
-    allowedHeaders: process.env.ALLOWED_HEADERS.split(","),
+    allowedOrigins: (process.env.ALLOWED_ORIGINS|| '').split(","),
+    allowedMethods: (process.env.ALLOWED_METHODS|| 'GET,POST,PUT,PATCH,DELETE').split(","),
+    allowedHeaders: (process.env.ALLOWED_HEADERS|| 'Content-Type,Authorization').split(","),
     credentials: process.env.CREDENTIALS === "true",
-    allowedLocalOrigins: process.env.ALLOWED_LOCAL_ORIGINS.split(","),
-    maxAge: parseInt(process.env.MAX_AGE),
+    allowedLocalOrigins: (process.env.ALLOWED_LOCAL_ORIGINS|| '').split(","),
+    maxAge: parseInt(process.env.MAX_AGE) ||86400,
 }
 
 
