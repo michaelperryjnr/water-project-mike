@@ -17,9 +17,17 @@ const port = process.env.PORT || 5000;
 
 // Create the uploads directory if it doesn't exist
 const uploadDir = path.join(__dirname, "uploads");
+const employeeUploadDir = path.join(uploadDir, "employees");
+const vehicleUploadDir = path.join(uploadDir, "vehicles");
 
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir);
+}
+if (!fs.existsSync(employeeUploadDir)) {
+  fs.mkdirSync(employeeUploadDir);
+}
+if (!fs.existsSync(vehicleUploadDir)) {
+  fs.mkdirSync(vehicleUploadDir);
 }
 
 //Middleware
@@ -79,7 +87,7 @@ function startServer() {
     app.use("/api/contracttypes", contractTypeRoutes);
 
     const vehicleRoutes = require("./routes/vehicleRoutes")
-    app.use("/api/vehicles", vehicleRoutes)
+    app.use("/api/vehicles", vehicleRoutes) //The middleware has already been added in the routes so just call it directly like so going forward
 
     const vehicleDriverLogRoutes = require("./routes/vehicleDriverLogRoutes")
     app.use("/api/vehicle-driver-logs", vehicleDriverLogRoutes)

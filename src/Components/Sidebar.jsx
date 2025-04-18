@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { BsArrowLeft, BsBagPlus, BsBoundingBox, BsCardChecklist, BsCashCoin, BsChevronDown, BsCreditCard, BsGear, BsJournals, BsPentagonHalf, BsPeople, BsPerson, BsPersonPlus, BsReceiptCutoff } from 'react-icons/bs'
+import { BsArrowLeft, BsBagPlus, BsBoundingBox, BsCardChecklist, BsCashCoin, BsChevronDown, BsCreditCard, BsGear, BsJournals, BsPentagonHalf, BsPeople, BsPerson, BsPersonPlus, BsReceiptCutoff, BsTruck } from 'react-icons/bs'
 import { NavLink, useLocation } from 'react-router-dom'
 import SidebarLinkGroup from './SidebarLinkGroup'
 /* import TimeDate from './TimeDate' */
@@ -161,9 +161,9 @@ const Sidebar = ({sidebarOpen, setSidebarOpen}) => {
 
                     <ul className='mb-6 flex flex-col gap-1.5'>
                         <li>
-                            <NavLink to='/newsubmission' className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-taureanLightBlue duration-300 ease-in-out hover:bg-taureanLightBlue hover:text-white ${pathname.includes('newsubmission') && 'bg-taureanLightBlue text-white'}`}>
-                                <BsPersonPlus className='fill-current' fill='none' size={24} />
-                                New Submissions
+                            <NavLink to='/vehicles' className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-taureanLightBlue duration-300 ease-in-out hover:bg-taureanLightBlue hover:text-white ${pathname.includes('newsubmission') && 'bg-taureanLightBlue text-white'}`}>
+                                <BsTruck className='fill-current' fill='none' size={24} />
+                                Vehicles
                             </NavLink>
                         </li>
                     </ul>
@@ -235,14 +235,14 @@ const Sidebar = ({sidebarOpen, setSidebarOpen}) => {
                                                             Departments
                                                         </NavLink>
                                                     </li>
-                                                    {/* <li>
-                                                        <NavLink to='/locationslist' className={({ isActive }) => 'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-white duration-300 ease-in-out hover:text-RhemaLime ' + (isActive && '!text-RhemaLime')}>
-                                                            Locations
-                                                        </NavLink>
-                                                    </li> */}
                                                     <li>
-                                                        <NavLink to='/companyinformationconfig' className={({ isActive }) => 'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-taureanLightBlue duration-300 ease-in-out hover:text-taureanDeepBlue ' + (isActive && '!text-taureanDeepBlue')}>
-                                                            Company Information
+                                                        <NavLink to='/insurance' className={({ isActive }) => 'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-taureanLightBlue duration-300 ease-in-out hover:text-taureanDeepBlue ' + (isActive && '!text-taureanDeepBlue')}>
+                                                            Insurance
+                                                        </NavLink>
+                                                    </li>
+                                                    <li>
+                                                        <NavLink to='/roadworth' className={({ isActive }) => 'group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-taureanLightBlue duration-300 ease-in-out hover:text-taureanDeepBlue ' + (isActive && '!text-taureanDeepBlue')}>
+                                                            Vehicle Road Worth
                                                         </NavLink>
                                                     </li>
                                                     <li>

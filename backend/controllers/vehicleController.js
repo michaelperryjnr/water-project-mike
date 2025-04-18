@@ -1,5 +1,7 @@
 const Vehicle = require("../models/Vehicle");
 const Logger = require("../utils/logger");
+const fs = require("fs");
+const path = require("path");
 
 // Get all vehicles
 exports.getVehicles = async (req, res) => {
@@ -54,13 +56,13 @@ exports.createVehicle = async (req, res) => {
     try {
         Logger("Creating new vehicle", req, "vehicleController");
         if (req.fileValidationError) {
-            return res.status(400).json({ message: req.fileValidationError });
+            return res.status(400).json({ message: req.fileValidationError.message });
         }
 
         const vehicleData = req.body;
 
         if (req.files && req.files.length > 0) {
-            vehicleData.pictures = req.files.map(file => `/uploads/${file.filename}`);
+            vehicleData.pictures = req.files.map(file => `/uploads/vehicles/${file.filename}`);
         }
 
         const newVehicle = new Vehicle(vehicleData);
@@ -102,11 +104,24 @@ exports.updateVehicle = async (req, res) => {
     try {
         Logger("Updating vehicle", req, "vehicleController");
         const vehicleData = req.body;
+
+        // Validate insurance and roadworthiness dates
+        if (vehicleData.insuranceStartDate && vehicleData.insuranceEndDate) {
+            if (new Date(vehicleData.insuranceEndDate) <= new Date(vehicleData.insuranceStartDate)) {
+                return res.status(400).json({ message: "Insurance end date must be after start date" });
+            }
+        }
+        if (vehicleData.roadWorthStartDate && vehicleData.roadWorthEndDate) {
+            if (new Date(vehicleData.roadWorthEndDate) <= new Date(vehicleData.roadWorthStartDate)) {
+                return res.status(400).json({ message: "Roadworthiness end date must be after start date" });
+            }
+        }
+
         if (req.files && req.files.length > 0) {
             const existingVehicle = await Vehicle.findById(req.params.id);
             vehicleData.pictures = [
                 ...(existingVehicle.pictures || []),
-                ...req.files.map(file => `/uploads/${file.filename}`)
+                ...req.files.map(file => `/uploads/vehicles/${file.filename}`)
             ];
         }
 
@@ -154,9 +169,27 @@ exports.updateVehicle = async (req, res) => {
 // Delete a vehicle
 exports.deleteVehicle = async (req, res) => {
     try {
-        Logger("Deleting vehicle", req, "vehicleController");
+        // Find the vehicle to get the pictures array
+        const vehicle = await Vehicle.findById(req.params.id);
+        if (!vehicle) return res.status(404).json({ message: 'Vehicle not found' });
+
+        // Delete associated images from the filesystem
+        if (vehicle.pictures && vehicle.pictures.length > 0) {
+            for (const picturePath of vehicle.pictures) {
+                const absolutePath = path.join(__dirname, '..', picturePath);
+                try {
+                    if (fs.existsSync(absolutePath)) {
+                        fs.unlinkSync(absolutePath);
+                    }
+                } catch (fileError) {
+                    console.warn(`Failed to delete file ${absolutePath}: ${fileError.message}`);
+                    // Continue with deletion even if a file fails to delete
+                }
+            }
+        }
+
+        // Delete the vehicle record from the database
         const deletedVehicle = await Vehicle.findByIdAndDelete(req.params.id);
-        if (!deletedVehicle) return res.status(404).json({ message: 'Vehicle not found' });
         res.status(200).json({ message: 'Vehicle deleted', deletedVehicle });
     } catch (error) {
         Logger("Failed to delete vehicle", req, "vehicleController", "error", error);
@@ -365,6 +398,12 @@ exports.removePicture = async (req, res) => {
         const vehicle = await Vehicle.findById(req.params.id);
         if (!vehicle) return res.status(404).json({ message: 'Vehicle not found' });
         
+        // Delete the file from the filesystem
+        const filePath = path.join(__dirname, '..', pictureUrl);
+        if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+        }
+
         // Filter out the specified picture
         const updatedPictures = vehicle.pictures.filter(pic => pic !== pictureUrl);
         

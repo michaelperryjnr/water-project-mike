@@ -1,24 +1,48 @@
-const multer = require("multer"); // Add multer
-const path = require("path"); // For handling file paths
+const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "uploads/"); // Save files to the 'uploads' folder
+    let uploadPath = "uploads/";
+    
+    // Determine the subfolder based on the request base URL
+    if (req.baseUrl === "/api/vehicles") {
+      uploadPath = path.join(uploadPath, "vehicles");
+    } else if (req.baseUrl === "/api/employees") {
+      uploadPath = path.join(uploadPath, "employees");
+    }
+
+    // Create the directory if it doesn't exist
+    if (!fs.existsSync(uploadPath)) {
+      fs.mkdirSync(uploadPath, { recursive: true });
+    }
+
+    cb(null, uploadPath);
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, `employee-${uniqueSuffix}${path.extname(file.originalname)}`); // e.g., employee-123456789.jpg
+    let prefix = "file";
+    
+    // Determine the filename prefix based on the request base URL
+    if (req.baseUrl === "/api/vehicles") {
+      prefix = "vehicle";
+    } else if (req.baseUrl === "/api/employees") {
+      prefix = "employee";
+    }
+
+    cb(null, `${prefix}-${uniqueSuffix}${path.extname(file.originalname)}`);
   },
 });
 
 // File filter to accept only images
 const fileFilter = (req, file, cb) => {
-  const allowedTypes = ["image/jpeg", "image/png", "image/gif"];
+  const allowedTypes = ["image/jpeg", "image/png", "image/jpg"];
   if (allowedTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new Error("Only JPEG, PNG, and GIF images are allowed"), false);
+    cb(new Error("Only JPEG, PNG, and JPG images are allowed"), false);
   }
 };
 

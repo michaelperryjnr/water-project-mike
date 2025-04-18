@@ -42,16 +42,6 @@ const InsuranceController = require('../controllers/insuranceController');
  *           type: string
  *           description: Additional details about the insurance policy
  *           example: "full coverage auto insurance for sedan vehicles"
- *         startDate:
- *           type: string
- *           format: date
- *           description: Policy start date
- *           example: "2023-01-01"
- *         endDate:
- *           type: string
- *           format: date
- *           description: Policy end date
- *           example: "2024-01-01"
  *       example:
  *         policyNumber: "pol-123456"
  *         provider: "acme insurance"
@@ -59,8 +49,6 @@ const InsuranceController = require('../controllers/insuranceController');
  *         insuranceType: "auto"
  *         autoInsuranceType: "comprehensive"
  *         insuranceDescription: "full coverage auto insurance for sedan vehicles"
- *         startDate: "2023-01-01"
- *         endDate: "2024-01-01"
  */
 
 /**

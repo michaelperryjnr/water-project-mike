@@ -35,6 +35,29 @@ exports.getBrandById = async (req, res) => {
 }
 
 
+// Get brand by name
+exports.getBrandByName = async (req, res) => {
+    try {
+      // Normalize the brand name: lowercase and trim spaces
+      const brandName = req.params.name.toLowerCase().trim();
+      console.log("Searching for brand:", brandName); // Debug log
+  
+      // Query the database with the normalized name
+      const brand = await Brand.findOne({ name: brandName });
+      console.log("Brand found:", brand); // Debug log
+  
+      if (!brand) {
+        return res.status(STATUS_CODES.NOT_FOUND).json({ message: "Brand not found." });
+      }
+  
+      res.status(STATUS_CODES.OK).json(brand);
+    } catch (error) {
+      console.error("Error in getBrandByName:", error);
+      return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({ message: error.message });
+    }
+  };
+
+
 // create brand
 exports.createBrand = async (req, res) => {
     try {
