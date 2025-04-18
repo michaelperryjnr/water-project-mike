@@ -170,6 +170,7 @@ exports.updateVehicle = async (req, res) => {
 exports.deleteVehicle = async (req, res) => {
     try {
         // Find the vehicle to get the pictures array
+        Logger("Deleting vehicle", req, "vehicleController");
         const vehicle = await Vehicle.findById(req.params.id);
         if (!vehicle) return res.status(404).json({ message: 'Vehicle not found' });
 
