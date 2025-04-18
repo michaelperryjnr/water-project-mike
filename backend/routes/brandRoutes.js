@@ -99,6 +99,33 @@ router.get('/:id', BrandController.getBrandById);
 
 /**
  * @swagger
+ * /api/brands/name/{name}:
+ *   get:
+ *     summary: Get a brand by name
+ *     tags: [Brands]
+ *     parameters:
+ *       - in: path
+ *         name: name
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The brand name
+ *     responses:
+ *       200:
+ *         description: Brand details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Brand'
+ *       404:
+ *         description: Brand not found
+ *       500:
+ *         description: Internal server error
+ */
+router.get('/name/:name', BrandController.getBrandByName);
+
+/**
+ * @swagger
  * /api/brands:
  *   post:
  *     summary: Create a new brand

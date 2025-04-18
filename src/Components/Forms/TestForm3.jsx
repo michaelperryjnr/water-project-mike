@@ -5,6 +5,9 @@ import NextOfKinSubForm from './SubForms/NextOfKinSubForm'
 import PositionsSubForm from './SubForms/PositionsSubForm'
 import DepartmentSubForm from './SubForms/DepartmentSubForm'
 import EmployeeSubForm from './SubForms/EmployeeSubForm'
+import InsuranceSubForm from './SubForms/InsuranceSubForm'
+import RoadWorthSubForm from './SubForms/RoadworthSubForm'
+import VehicleSubForm from './SubForms/VehicleSubForm'
 
 const TestForm3 = () => {
 
@@ -15,6 +18,9 @@ const TestForm3 = () => {
   const employeeRef = useRef(null);
   const departmentRef = useRef(null);
   const nextOfKinRef = useRef(null);
+  const insuranceRef = useRef(null);
+  const roadworthRef = useRef(null);
+  const vehicleRef = useRef(null);
 
   // Effect to scroll to the correct section
   useEffect(() => {
@@ -98,6 +104,60 @@ const TestForm3 = () => {
                     <div className='shadow sm:rounded-md sm:overflow-hidden'>
                         <div className='px-4 py-5 bg-white space-y-6 sm:p-6'>
                             <DepartmentSubForm />  
+                        </div>
+                    </div>
+                </div>
+            </div>
+          </div>
+
+          <div ref={vehicleRef} id='vehicle-form' className='bg-white shawdow px-4 py-4 sm:rounded-lg sm:p-6'>
+            <div className='md:grid md:grid-cols-3 md:gap-6'>
+                <div className='md:col-span-1'>
+                    <div className='px-4 sm:px-0 border-b-2 border-taureanDeepBlue'>
+                        <h3 className='text-5xl font-medium leading6 text-taureanLightBlue'>Vehicle Form</h3>
+                        <p className='mt-1 text-sm text-taureanOrange'> Fill this form to add a new Vehicle</p>
+                    </div>
+                </div>
+                <div className='mt-5 md:mt-0 md:col-span-2'>
+                    <div className='shadow sm:rounded-md sm:overflow-hidden'>
+                        <div className='px-4 py-5 bg-white space-y-6 sm:p-6'>
+                            <VehicleSubForm />  
+                        </div>
+                    </div>
+                </div>
+            </div>
+          </div>
+
+          <div ref={insuranceRef} id='insurance-form' className='bg-white shawdow px-4 py-4 sm:rounded-lg sm:p-6'>
+            <div className='md:grid md:grid-cols-3 md:gap-6'>
+                <div className='md:col-span-1'>
+                    <div className='px-4 sm:px-0 border-b-2 border-taureanDeepBlue'>
+                        <h3 className='text-5xl font-medium leading6 text-taureanLightBlue'>Insurance Form</h3>
+                        <p className='mt-1 text-sm text-taureanOrange'> Fill this form to add a new Insurance Policy</p>
+                    </div>
+                </div>
+                <div className='mt-5 md:mt-0 md:col-span-2'>
+                    <div className='shadow sm:rounded-md sm:overflow-hidden'>
+                        <div className='px-4 py-5 bg-white space-y-6 sm:p-6'>
+                            <InsuranceSubForm />  
+                        </div>
+                    </div>
+                </div>
+            </div>
+          </div>
+
+          <div ref={roadworthRef} id='roadworth-form' className='bg-white shawdow px-4 py-4 sm:rounded-lg sm:p-6'>
+            <div className='md:grid md:grid-cols-3 md:gap-6'>
+                <div className='md:col-span-1'>
+                    <div className='px-4 sm:px-0 border-b-2 border-taureanDeepBlue'>
+                        <h3 className='text-5xl font-medium leading6 text-taureanLightBlue'>Road Worth Form</h3>
+                        <p className='mt-1 text-sm text-taureanOrange'> Fill this form to add a new Road Worth Certificate</p>
+                    </div>
+                </div>
+                <div className='mt-5 md:mt-0 md:col-span-2'>
+                    <div className='shadow sm:rounded-md sm:overflow-hidden'>
+                        <div className='px-4 py-5 bg-white space-y-6 sm:p-6'>
+                            <RoadWorthSubForm />  
                         </div>
                     </div>
                 </div>

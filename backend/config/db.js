@@ -5,10 +5,7 @@ require("dotenv").config();
 
 const connectDB = async () => {
   try {
-    await mongoose.connect(process.env.MONGO_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    await mongoose.connect(process.env.MONGO_URI);
     console.log("MongoDB Connected");
   } catch (err) {
     console.error("MongoDB Connection Error:", err);
@@ -18,7 +15,7 @@ const connectDB = async () => {
 
 const disconnectDB = async () => {
   try {
-    await mongoose.connection.close();
+    await mongoose.connection.disconnect();
     console.log("MongoDB Disconnected");
   } catch (error) {
     console.error("Error disconnecting from MongoDB", err);

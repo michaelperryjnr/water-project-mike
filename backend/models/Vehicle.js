@@ -9,6 +9,8 @@ const OWNERSHIP_STATUS = ["owned", "leased", "rented", "financed", "borrowed", "
 const TRANSMISSION_TYPES = ["automatic", "manual", "semi-automatic", "cvt"];
 const FUEL_TYPES = ["diesel", "petrol", "electric", "hybrid", "compressed natural gas", "biofuel", "ethanol", "propane", "hydrogen"];
 const WEIGHT_UNITS = ["kg", "grams", "tons"];
+const VALID_INSURANCE_STATUS = ["valid", "expired", "revoked"];
+const VALID_ROADWORTH_STATUS = ["valid", "expired", "revoked"];
 
 const vehicleSchema = new mongoose.Schema({
   // Basic identification details
@@ -49,11 +51,13 @@ const vehicleSchema = new mongoose.Schema({
 
   // Insurance and compliance details
   insurance: { type: mongoose.Schema.Types.ObjectId, ref: "Insurance" }, // Frontend: Dropdown (populated from Insurance collection)
-  insuranceStartDate: { type: Date }, // Frontend: Date picker
-  insuranceEndDate: { type: Date }, // Frontend: Date picker
+  insuranceStatus: { type: String, enum: VALID_INSURANCE_STATUS, default: "valid" }, // Frontend: Dropdown (populated from ["valid", "expired"])
+  insuranceStartDate: { type: Date, required: function () { return !!this.insurance; } }, // Frontend: Date picker
+  insuranceEndDate: { type: Date, required: function () { return !!this.insurance; } }, // Frontend: Date picker
   roadWorth: { type: mongoose.Schema.Types.ObjectId, ref: "RoadWorth" }, // Frontend: Dropdown (populated from RoadWorth collection)
-  roadWorthStartDate: { type: Date }, // Frontend: Date picker
-  roadWorthEndDate: { type: Date }, // Frontend: Date picker
+  roadWorthStatus: { type: String, enum: VALID_ROADWORTH_STATUS , default: "valid" }, // Frontend: Dropdown (populated from ["valid", "expired"])
+  roadWorthStartDate: { type: Date, required: function () { return !!this.roadWorth; } }, // Frontend: Date picker
+  roadWorthEndDate: { type: Date, required: function () { return !!this.roadWorth; } }, // Frontend: Date picker
 }, { timestamps: true });
 
 // Middleware to validate that the model belongs to the selected brand
@@ -63,9 +67,24 @@ vehicleSchema.pre("save", async function (next) {
     if (!brand) {
       return next(new Error("Brand not found"));
     }
-    const modelExists = brand.models.some((model) => model.name === this.model.toLowerCase());
+    const modelExists = brand.models.some((model) => model.name.toLowerCase() === this.model.toLowerCase());
     if (!modelExists) {
       return next(new Error(`Model ${this.model} is not available for brand ${brand.name}`));
+    }
+  }
+  next();
+});
+
+// Middleware to validate insurance and roadworthiness dates
+vehicleSchema.pre("save", function (next) {
+  if (this.insurance && this.insuranceStartDate && this.insuranceEndDate) {
+    if (this.insuranceEndDate <= this.insuranceStartDate) {
+      return next(new Error("Insurance end date must be after start date"));
+    }
+  }
+  if (this.roadWorth && this.roadWorthStartDate && this.roadWorthEndDate) {
+    if (this.roadWorthEndDate <= this.roadWorthStartDate) {
+      return next(new Error("Roadworthiness end date must be after start date"));
     }
   }
   next();
