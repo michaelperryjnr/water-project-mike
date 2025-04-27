@@ -21,7 +21,9 @@ async function authenticateUser(req, res, next) {
 
 function authorizeRoles(...allowedRoles) {
     return (req, res, next) => {
-        if (!allowedRoles.includes(req.user.position)) {
+        const userPosition = req.user.position?.toLowerCase().trim();
+        const isAuthorized = allowedRoles.some(role => role.toLowerCase().trim() === userPosition);
+        if (!isAuthorized) {
             return res.status(STATUS_CODES.UNAUTHORIZED).json({ message: 'Forbidden' });
         }
         next(); 

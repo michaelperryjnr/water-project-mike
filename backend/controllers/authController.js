@@ -1,73 +1,409 @@
-const jwt = require("jsonwebtoken");
-const bcrypt = require("bcrypt")
-const {CONFIG} = require("../config/core")
+const User = require("../models/User");
+const Employee = require("../models/Employee");
+const {STATUS_CODES, CONFIG} = require("../config/core");
+const Logger = require("../utils/logger");
+const {hashPassword, comparePassword, generateAccessToken, generateRefreshToken, verifyToken} = require("../utils/authUtils");
 
-async function hashPassword(password) {
+exports.registerUser = async(req, res) => {
     try {
-        const salt = await bcrypt.genSalt(10);
-        return await bcrypt.hash(password, salt);
-    } catch (error) {
-        throw error;
-    }
-}
+        Logger("Registering user", req, "auth-controller");
+        const {staffNumber, password} = req.body;
 
-async function comparePassword(password, hashedPassword) {
-    try {
-        return await bcrypt.compare(password, hashedPassword);
-    } catch (error) {
-        throw error;
-    }
-}
+        if (!staffNumber || !password) {
+            return res.status(STATUS_CODES.BAD_REQUEST).json({
+                message: "All fields are required"
+            });
+        }
 
-async function generateAccessToken(user) {
-    if (!user) {
-        throw new Error("User is required for generating access token");
-    }
+        const existingUser = await User.findOne({staffNumber: staffNumber});
 
-    try {
-        return jwt.sign({ id: user._id, position: user.position }, CONFIG.ACCESS_TOKEN_SECRET, {
-            expiresIn: CONFIG.ACCESS_TOKEN_EXPIRATION,
+        if (existingUser) {
+            return res.status(STATUS_CODES.BAD_REQUEST).json({
+                message: "User already exists"
+            });
+        }
+
+        const employee = await Employee.findOne({staffNumber: staffNumber})
+        .populate("email")
+        .populate("position");
+
+        if (!employee) {
+            return res.status(STATUS_CODES.BAD_REQUEST).json({
+                message: "Employee not found"
+            });
+        }
+
+        const hashedPassword = await hashPassword(password);
+
+        const newUser = new User({
+            username: employee.username,
+            staffNumber: employee.staffNumber,
+            email: employee.email,
+            hashedPassword: hashedPassword,
+            position: employee.position.positionTitle
         });
-    } catch (error) {
-        throw error;
-    }
-}
 
-async function generateRefreshToken(user) {
-    if (!user) {
-        throw new Error("User is required for generating refresh token");
-    }
+        await newUser.save();
 
-    try {
-        return jwt.sign({ id: user._id, position: user.position }, CONFIG.REFRESH_TOKEN_SECRET, {
-            expiresIn: CONFIG.REFRESH_TOKEN_EXPIRATION,
+        Logger("User registered successfully", req, "auth-controller", "info");
+
+        res.status(STATUS_CODES.CREATED).json({
+            message: "User registered successfully",
+            user: {
+                id: newUser._id,
+                username: newUser.username,
+                staffNumber: newUser.staffNumber,
+                email: newUser.email,
+                position: newUser.position
+            }
         });
-    } catch (error) {
-        throw error;
-    }
-}
 
-async function verifyToken(token) {
+    } catch (error) {
+        Logger("Error registering user", req, "auth-controller", "error", error);
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+            message: "Error registering user",
+            error: error.message
+        });
+    }
+};
+
+exports.loginUser = async(req, res) => {
     try {
-        return jwt.verify(token, CONFIG.ACCESS_TOKEN_SECRET);
-    } catch (error) {
-        throw error;
-    }
-}
+        Logger("User login attempt", req, "auth-controller");
+        const {staffNumber, password} = req.body;
 
-async function verifyRefreshToken(token) {
+        if (!staffNumber || !password) {
+            return res.status(STATUS_CODES.BAD_REQUEST).json({
+                message: "Staff number and password are required"
+            });
+        }
+
+        const user = await User.findOne({staffNumber: staffNumber})
+            .populate("position");
+
+        if (!user) {
+            return res.status(STATUS_CODES.NOT_FOUND).json({
+                message: "User not found"
+            });
+        }
+
+        const isPasswordValid = await comparePassword(password, user.hashedPassword);
+
+        if (!isPasswordValid) {
+            return res.status(STATUS_CODES.UNAUTHORIZED).json({
+                message: "Invalid credentials"
+            });
+        }
+
+        const accessToken = generateAccessToken({
+            id: user._id,
+            staffNumber: user.staffNumber,
+            position: user.position.positionTitle
+        });
+
+        const refreshToken = generateRefreshToken({
+            id: user._id,
+            staffNumber: user.staffNumber
+        });
+
+        user.refreshToken = refreshToken;
+        await user.save();
+
+        Logger("User logged in successfully", req, "auth-controller", "info");
+
+        res.status(STATUS_CODES.OK).json({
+            message: "Login successful",
+            user: {
+                id: user._id,
+                username: user.username,
+                staffNumber: user.staffNumber,
+                email: user.email,
+                position: user.position.positionTitle
+            },
+            accessToken,
+            refreshToken
+        });
+
+    } catch (error) {
+        Logger("Error logging in user", req, "auth-controller", "error", error);
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+            message: "Error logging in",
+            error: error.message
+        });
+    }
+};
+
+exports.refreshToken = async(req, res) => {
     try {
-        return jwt.verify(token, CONFIG.REFRESH_TOKEN_SECRET);
-    } catch (error) {
-        throw error;
-    }
-}
+        Logger("Refreshing token", req, "auth-controller");
+        const {refreshToken} = req.body;
 
-module.exports = {
-    hashPassword,
-    comparePassword,
-    generateAccessToken,
-    generateRefreshToken,
-    verifyToken,
-    verifyRefreshToken,
-}
+        if (!refreshToken) {
+            return res.status(STATUS_CODES.BAD_REQUEST).json({
+                message: "Refresh token is required"
+            });
+        }
+
+        const decoded = verifyToken(refreshToken, CONFIG.REFRESH_TOKEN_SECRET);
+        
+        if (!decoded) {
+            return res.status(STATUS_CODES.UNAUTHORIZED).json({
+                message: "Invalid refresh token"
+            });
+        }
+
+        const user = await User.findOne({
+            _id: decoded.id,
+            refreshToken: refreshToken
+        }).populate("position");
+
+        if (!user) {
+            return res.status(STATUS_CODES.UNAUTHORIZED).json({
+                message: "User not found or token revoked"
+            });
+        }
+        const accessToken = generateAccessToken({
+            id: user._id,
+            staffNumber: user.staffNumber,
+            position: user.position.positionTitle
+        });
+
+        Logger("Token refreshed successfully", req, "auth-controller", "info");
+
+        res.status(STATUS_CODES.OK).json({
+            message: "Token refreshed successfully",
+            accessToken
+        });
+
+    } catch (error) {
+        Logger("Error refreshing token", req, "auth-controller", "error", error);
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+            message: "Error refreshing token",
+            error: error.message
+        });
+    }
+};
+
+exports.logoutUser = async(req, res) => {
+    try {
+        Logger("Logging out user", req, "auth-controller");
+        const {refreshToken} = req.body;
+
+        if (!refreshToken) {
+            return res.status(STATUS_CODES.BAD_REQUEST).json({
+                message: "Refresh token is required"
+            });
+        }
+
+        const user = await User.findOneAndUpdate(
+            { refreshToken: refreshToken },
+            { refreshToken: null },
+            { new: true }
+        );
+
+        if (!user) {
+            return res.status(STATUS_CODES.NOT_FOUND).json({
+                message: "User not found or already logged out"
+            });
+        }
+
+        Logger("User logged out successfully", req, "auth-controller", "info");
+
+        res.status(STATUS_CODES.OK).json({
+            message: "Logged out successfully"
+        });
+
+    } catch (error) {
+        Logger("Error logging out user", req, "auth-controller", "error", error);
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+            message: "Error logging out",
+            error: error.message
+        });
+    }
+};
+
+exports.resetPassword = async(req, res) => {
+    try {
+        Logger("Password reset attempt", req, "auth-controller");
+        const {staffNumber, newPassword} = req.body;
+        const requestingUser = req.user;
+
+        if (requestingUser.position !== 'Super Admin') {
+            return res.status(STATUS_CODES.UNAUTHORIZED).json({
+                message: "Only Super Admin can reset passwords"
+            });
+        }
+
+        if (!staffNumber || !newPassword) {
+            return res.status(STATUS_CODES.BAD_REQUEST).json({
+                message: "Staff number and new password are required"
+            });
+        }
+
+        const user = await User.findOne({staffNumber: staffNumber});
+
+        if (!user) {
+            return res.status(STATUS_CODES.NOT_FOUND).json({
+                message: "User not found"
+            });
+        }
+
+        const hashedPassword = await hashPassword(newPassword);
+
+        user.hashedPassword = hashedPassword;
+        user.refreshToken = null;
+        
+        await user.save();
+
+        Logger("Password reset successful", req, "auth-controller", "info");
+
+        res.status(STATUS_CODES.OK).json({
+            message: "Password reset successful"
+        });
+
+    } catch (error) {
+        Logger("Error resetting password", req, "auth-controller", "error", error);
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+            message: "Error resetting password",
+            error: error.message
+        });
+    }
+};
+
+exports.changePassword = async(req, res) => {
+    try {
+        Logger("Password change attempt", req, "auth-controller");
+        const {currentPassword, newPassword} = req.body;
+        const userId = req.user.id;
+
+        if (!currentPassword || !newPassword) {
+            return res.status(STATUS_CODES.BAD_REQUEST).json({
+                message: "Current password and new password are required"
+            });
+        }
+
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(STATUS_CODES.NOT_FOUND).json({
+                message: "User not found"
+            });
+        }
+
+        const isPasswordValid = await comparePassword(currentPassword, user.hashedPassword);
+
+        if (!isPasswordValid) {
+            return res.status(STATUS_CODES.UNAUTHORIZED).json({
+                message: "Current password is incorrect"
+            });
+        }
+
+        const hashedPassword = await hashPassword(newPassword);
+        
+        user.hashedPassword = hashedPassword;
+        user.refreshToken = null;
+        
+        await user.save();
+
+        Logger("Password changed successfully", req, "auth-controller", "info");
+
+        res.status(STATUS_CODES.OK).json({
+            message: "Password changed successfully"
+        });
+
+    } catch (error) {
+        Logger("Error changing password", req, "auth-controller", "error", error);
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+            message: "Error changing password",
+            error: error.message
+        });
+    }
+};
+
+exports.changeEmail = async(req, res) => {
+    try {
+        Logger("Email change attempt", req, "auth-controller");
+        const {staffNumber, newEmail} = req.body;
+        const requestingUser = req.user;
+
+        if (requestingUser.position !== 'Super Admin') {
+            return res.status(STATUS_CODES.UNAUTHORIZED).json({
+                message: "Only Super Admin can change email addresses"
+            });
+        }
+
+        if (!staffNumber || !newEmail) {
+            return res.status(STATUS_CODES.BAD_REQUEST).json({
+                message: "Staff number and new email are required"
+            });
+        }
+
+        const user = await User.findOne({staffNumber: staffNumber});
+
+        if (!user) {
+            return res.status(STATUS_CODES.NOT_FOUND).json({
+                message: "User not found"
+            });
+        }
+
+        const employee = await Employee.findOne({staffNumber: staffNumber});
+        
+        if (employee) {
+            employee.email = newEmail;
+            await employee.save();
+        }
+
+        user.email = newEmail;
+        await user.save();
+
+        Logger("Email changed successfully", req, "auth-controller", "info");
+
+        res.status(STATUS_CODES.OK).json({
+            message: "Email changed successfully",
+            user: {
+                id: user._id,
+                username: user.username,
+                staffNumber: user.staffNumber,
+                email: user.email
+            }
+        });
+
+    } catch (error) {
+        Logger("Error changing email", req, "auth-controller", "error", error);
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+            message: "Error changing email",
+            error: error.message
+        });
+    }
+};
+
+exports.getUserProfile = async(req, res) => {
+    try {
+        Logger("Getting user profile", req, "auth-controller");
+        const userId = req.user.id;
+
+        const user = await User.findById(userId)
+            .populate("position")
+            .select("-hashedPassword -refreshToken");
+
+        if (!user) {
+            return res.status(STATUS_CODES.NOT_FOUND).json({
+                message: "User not found"
+            });
+        }
+
+        Logger("User profile retrieved successfully", req, "auth-controller", "info");
+
+        res.status(STATUS_CODES.OK).json({
+            message: "User profile retrieved successfully",
+            user
+        });
+
+    } catch (error) {
+        Logger("Error getting user profile", req, "auth-controller", "error", error);
+        res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+            message: "Error getting user profile",
+            error: error.message
+        });
+    }
+};
