@@ -3,8 +3,8 @@ const mongoose = require("mongoose");
 const inventoryItemSchema = new mongoose.Schema({
   itemCode: { type: String, required: true, unique: true, trim: true, index: true },
   itemDescription: { type: String, required: true, trim: true },
-  inventoryType: { type: String, enum: ["Physical", "Service"], required: true },
-  unitOfMeasure: { type: String, enum: ["Piece", "Set", "Box", "Bundle", "Kg", "Liter"], required: true },
+  inventoryType: { type: String, enum: ["physical", "service"], required: true },
+  unitOfMeasure: { type: String, enum: ["piece", "set", "box", "bundle", "kg", "liter"], required: true },
   saleable: { type: Boolean, default: true },
   category: { type: mongoose.Schema.Types.ObjectId, ref: "InventoryCategory", required: true, index: true},
   unitCost: { type: Number, required: true, min: 0 },
@@ -30,13 +30,13 @@ const inventoryItemSchema = new mongoose.Schema({
   taxRate: { type: mongoose.Schema.Types.ObjectId, ref: "TaxRate" },
   specialPrice: { type: Number, min: 0 },
   specialPriceDuration: { type: Number, min: 0 },
-  specialPriceDurationPeriod: { type: String, enum: ["Days", "Weeks", "Months", "Years"] },
+  specialPriceDurationPeriod: { type: String, enum: ["days", "deeks", "months", "years"] },
   specialPriceStartDate: { type: Date },
   specialPriceEndDate: { type: Date },
   quantityInStock: { type: Number, default: 0, min: 0 },
   reorderLevel: { type: Number, min: 0 },
   reorderQuantity: { type: Number, min: 0 },
-  status: { type: String, enum: ["Active", "Discontinued", "OnHold"], default: "Active", index: true }
+  status: { type: String, enum: ["active", "discontinued", "onhold"], default: "Active", index: true }
 }, { timestamps: true });
 
 inventoryItemSchema.pre("save", function(next) {

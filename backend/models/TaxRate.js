@@ -5,7 +5,7 @@ const taxRateSchema = new mongoose.Schema({
   rate: { type: Number, required: true, min: 0 },
   appliesTo: { 
     type: String, 
-    enum: ["Purchase", "Sale", "Both"], 
+    enum: ["purchase", "sale", "both"], 
     required: true 
   }
 }, { timestamps: true });

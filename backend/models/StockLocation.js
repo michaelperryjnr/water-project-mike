@@ -8,7 +8,7 @@ const stockLocationSchema = new mongoose.Schema({
   },
   location: { 
     type: String, 
-    enum: ["Warehouse", "FinishedGoodsStore", "RetailStore", "Transit"], 
+    enum: ["warehouse", "finishedgoodsstore", "retailstore", "transit"], 
     required: true 
   },
   quantity: { type: Number, default: 0, min: 0 },

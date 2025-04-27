@@ -24,19 +24,19 @@ const salesOrderSchema = new mongoose.Schema({
   totalAmount: { type: Number, required: true, min: 0 },
   status: { 
     type: String, 
-    enum: ["Pending", "Processing", "Shipped", "Delivered", "Cancelled"], 
-    default: "Pending",
+    enum: ["pending", "processing", "shipped", "delivered", "cancelled"], 
+    default: "pending",
     index: true
   },
   paymentStatus: { 
     type: String, 
-    enum: ["Unpaid", "Partial", "Paid"], 
-    default: "Unpaid",
+    enum: ["unpaid", "partial", "paid"], 
+    default: "unpaid",
     index: true
   },
   paymentMethod: { 
     type: String, 
-    enum: ["Cash", "CreditCard", "BankTransfer", "PayPal"] 
+    enum: ["cash", "creditcard", "banktransfer", "payPal"] 
   },
   orderDate: { type: Date, default: Date.now },
   deliveryDate: { type: Date }

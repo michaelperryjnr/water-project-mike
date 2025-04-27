@@ -12,6 +12,8 @@ const storage = multer.diskStorage({
       uploadPath = path.join(uploadPath, "vehicles");
     } else if (req.baseUrl === "/api/employees") {
       uploadPath = path.join(uploadPath, "employees");
+    } else if (req.baseUrl === "/api/items") {
+      uploadPath = path.join(uploadPath, "inventoryitems");
     }
 
     // Create the directory if it doesn't exist
@@ -30,6 +32,8 @@ const storage = multer.diskStorage({
       prefix = "vehicle";
     } else if (req.baseUrl === "/api/employees") {
       prefix = "employee";
+    } else if (req.baseUrl === "/api/items") {
+      prefix = "inventoryimage";
     }
 
     cb(null, `${prefix}-${uniqueSuffix}${path.extname(file.originalname)}`);

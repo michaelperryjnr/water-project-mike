@@ -1,16 +1,16 @@
 //server.js
 const express = require("express");
 const cors = require("cors");
+const path = require("path"); // For handling file paths
+const corsOptions = require("./middlewares/corsMiddleware")
 const swaggerUi = require("swagger-ui-express");
 const swaggerSpec = require("./swagger");
 const multer = require("multer"); // Add multer
-const path = require("path"); // For handling file paths
 const fs = require("fs");
 const uploadMiddleware = require("./middlewares/uploadMiddleware")
 const {ErrorHandler, Logger} = require("./middlewares/loggerMiddleware")
 const {apiLimiter} = require("./middlewares/rateLimiterMiddleware")
 const helmet = require("helmet")
-const corsOptions = require("./middlewares/corsMiddleware")
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -42,10 +42,14 @@ function startServer() {
     app.use(Logger)
     app.use(apiLimiter)
 
-    // Security Middleware
-    app.use(helmet.hidePoweredBy({setTo: "PHP 4.2.0"}))
-    app.use(helmet())
+    //Allow CORS For All Routes Globally First
     app.use(cors(corsOptions))
+
+    // Security Middleware Apply Helment After CORS
+    app.use(helmet.hidePoweredBy({setTo: "PHP 4.2.0"}))
+    app.use(helmet({
+      crossOriginResourcePolicy: false, // Disable for now to test
+  }))
 
     // API Docs
     app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
@@ -62,7 +66,7 @@ function startServer() {
     });
 
     // Serve static files (for accessing uploaded images)
-    app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+    app.use("/uploads", cors(corsOptions), express.static(path.join(__dirname, "uploads")));
 
     //Routes
     const employeeRoutes = require("./routes/employeeRoutes");

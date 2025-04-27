@@ -8,13 +8,13 @@ const stockTransactionSchema = new mongoose.Schema({
   },
   transactionType: { 
     type: String, 
-    enum: ["StockIn", "StockOut", "Adjustment", "Return"], 
+    enum: ["stockin", "stockout", "adjustment", "return"], 
     required: true 
   },
   quantity: { type: Number, required: true },
   location: { 
     type: String, 
-    enum: ["Warehouse", "FinishedGoodsStore", "RetailStore", "Transit"], 
+    enum: ["warehouse", "finishedgoodsstore", "retailstore", "transit"], 
     required: true 
   },
   reference: { type: String, trim: true }
