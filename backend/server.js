@@ -126,8 +126,8 @@ function startServer() {
     const supplierRoutes = require("./routes/supplierRoutes")
     app.use("/api/suppliers", supplierRoutes)
 
-    const userRoutes = require("./routes/userRoutes")
-    app.use("/api/auth", userRoutes)
+    const authRoutes = require("./routes/authRoutes")
+    app.use("/api/auth", authRoutes)
 
     //Start the server
     const server = app.listen(port, () =>
