@@ -10,7 +10,8 @@
     "populateNationality": "node scripts/populateNationalities.js",
     "populateCountry": "node scripts/populateCountries.js",
     "populateContractTypes": "node scripts/populateContractTypes.js",
-    "populateBrands": "node scripts/populateBrands.js"
+    "populateBrands": "node scripts/populateBrands.js",
+    "populateRoles": "node scripts/populateRoles.js"
   },
   "keywords": [],
   "author": "",
