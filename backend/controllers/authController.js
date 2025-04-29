@@ -1,5 +1,6 @@
 const User = require("../models/User");
 const Employee = require("../models/Employee");
+const Role = require("../models/Role");
 const {STATUS_CODES, CONFIG} = require("../config/core");
 const Logger = require("../utils/logger");
 const {hashPassword, comparePassword, generateAccessToken, generateRefreshToken, verifyToken} = require("../utils/authUtils");
@@ -7,11 +8,11 @@ const {hashPassword, comparePassword, generateAccessToken, generateRefreshToken,
 exports.registerUser = async(req, res) => {
     try {
         Logger("Registering user", req, "auth-controller");
-        const {staffNumber, password} = req.body;
+        const {staffNumber, password, roleName} = req.body;
 
-        if (!staffNumber || !password) {
+        if (!staffNumber || !password || roleName) {
             return res.status(STATUS_CODES.BAD_REQUEST).json({
-                message: "All fields are required"
+                message: "Staff number, password, and role are required"
             });
         }
 
@@ -25,12 +26,18 @@ exports.registerUser = async(req, res) => {
 
         const employee = await Employee.findOne({staffNumber: staffNumber})
         .populate("email")
-        .populate("position");
 
         if (!employee) {
             return res.status(STATUS_CODES.BAD_REQUEST).json({
                 message: "Employee not found"
             });
+        }
+
+        let role = await Role.findOne({name: roleName.toLowerCase()})
+
+        if (!role) {
+            role = new Role({name: roleName.toLowerCase(), description: `Role for ${roleName.toLowerCase}`});
+            await role.save()
         }
 
         const hashedPassword = await hashPassword(password);
@@ -40,7 +47,7 @@ exports.registerUser = async(req, res) => {
             staffNumber: employee.staffNumber,
             email: employee.email,
             hashedPassword: hashedPassword,
-            position: employee.position.positionTitle
+            role: role._id,
         });
 
         await newUser.save();
@@ -54,7 +61,7 @@ exports.registerUser = async(req, res) => {
                 username: newUser.username,
                 staffNumber: newUser.staffNumber,
                 email: newUser.email,
-                position: newUser.position
+                role: role.name,
             }
         });
 
@@ -79,7 +86,7 @@ exports.loginUser = async(req, res) => {
         }
 
         const user = await User.findOne({staffNumber: staffNumber})
-            .populate("position");
+            .populate("role");
 
         if (!user) {
             return res.status(STATUS_CODES.NOT_FOUND).json({
@@ -98,7 +105,7 @@ exports.loginUser = async(req, res) => {
         const accessToken = generateAccessToken({
             id: user._id,
             staffNumber: user.staffNumber,
-            position: user.position.positionTitle
+            role: user.role.name
         });
 
         const refreshToken = generateRefreshToken({
@@ -118,7 +125,7 @@ exports.loginUser = async(req, res) => {
                 username: user.username,
                 staffNumber: user.staffNumber,
                 email: user.email,
-                position: user.position.positionTitle
+                role: user.role.name
             },
             accessToken,
             refreshToken
@@ -155,7 +162,7 @@ exports.refreshToken = async(req, res) => {
         const user = await User.findOne({
             _id: decoded.id,
             refreshToken: refreshToken
-        }).populate("position");
+        }).populate("role");
 
         if (!user) {
             return res.status(STATUS_CODES.UNAUTHORIZED).json({
@@ -165,7 +172,7 @@ exports.refreshToken = async(req, res) => {
         const accessToken = generateAccessToken({
             id: user._id,
             staffNumber: user.staffNumber,
-            position: user.position.positionTitle
+            role: user.role.name
         });
 
         Logger("Token refreshed successfully", req, "auth-controller", "info");
@@ -228,7 +235,7 @@ exports.resetPassword = async(req, res) => {
         const {staffNumber, newPassword} = req.body;
         const requestingUser = req.user;
 
-        if (requestingUser.position !== 'Super Admin') {
+        if (requestingUser.role !== 'superadmin') {
             return res.status(STATUS_CODES.UNAUTHORIZED).json({
                 message: "Only Super Admin can reset passwords"
             });
@@ -299,7 +306,6 @@ exports.changePassword = async(req, res) => {
         }
 
         const hashedPassword = await hashPassword(newPassword);
-        
         user.hashedPassword = hashedPassword;
         user.refreshToken = null;
         
@@ -326,7 +332,7 @@ exports.changeEmail = async(req, res) => {
         const {staffNumber, newEmail} = req.body;
         const requestingUser = req.user;
 
-        if (requestingUser.position !== 'Super Admin') {
+        if (requestingUser.role !== 'superadmin') {
             return res.status(STATUS_CODES.UNAUTHORIZED).json({
                 message: "Only Super Admin can change email addresses"
             });
@@ -383,7 +389,7 @@ exports.getUserProfile = async(req, res) => {
         const userId = req.user.id;
 
         const user = await User.findById(userId)
-            .populate("position")
+            .populate("role")
             .select("-hashedPassword -refreshToken");
 
         if (!user) {
@@ -396,7 +402,13 @@ exports.getUserProfile = async(req, res) => {
 
         res.status(STATUS_CODES.OK).json({
             message: "User profile retrieved successfully",
-            user
+            user: {
+                id: user._id,
+                username: user.username,
+                staffNumber: user.staffNumber,
+                email: user.email,
+                role: user.role.name
+            }
         });
 
     } catch (error) {
