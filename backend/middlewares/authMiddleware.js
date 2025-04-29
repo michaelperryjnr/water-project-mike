@@ -12,7 +12,17 @@ async function authenticateUser(req, res, next) {
 
     try {
         const decoded = jwt.verify(token, CONFIG.ACCESS_TOKEN_SECRET);
-        req.user = decoded; 
+        const user = await User.findById(decoded.id).populate("role")
+
+        if (!user) {
+            return res.status(STATUS_CODES.NOT_FOUND).json({message: "User not found."})
+        }
+
+        req.user = {
+            id: user._id,
+            staffNumber: user.staffNumber,
+            role: user.role.name
+        }
         next(); 
     } catch (error) {
         return res.status(STATUS_CODES.UNAUTHORIZED).json({ message: 'Invalid token' });
@@ -21,10 +31,10 @@ async function authenticateUser(req, res, next) {
 
 function authorizeRoles(...allowedRoles) {
     return (req, res, next) => {
-        const userPosition = req.user.position?.toLowerCase().trim();
-        const isAuthorized = allowedRoles.some(role => role.toLowerCase().trim() === userPosition);
+        const userRole = req.user.role.toLowerCase().trim();
+        const isAuthorized = allowedRoles.some(role => role.toLowerCase().trim() === userRole);
         if (!isAuthorized) {
-            return res.status(STATUS_CODES.UNAUTHORIZED).json({ message: 'Forbidden' });
+            return res.status(STATUS_CODES.UNAUTHORIZED).json({ message: `Access denied: Requires one of the following roles: ${allowedRoles.join(", ")}}`});
         }
         next(); 
     };
