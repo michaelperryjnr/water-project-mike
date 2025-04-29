@@ -1,7 +1,10 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const AuthController = require('../controllers/authController');
-const { authenticateUser, authorizeRoles } = require('../middlewares/authMiddleware');
+const AuthController = require("../controllers/authController");
+const {
+  authenticateUser,
+  authorizeRoles,
+} = require("../middlewares/authMiddleware");
 
 /**
  * @swagger
@@ -13,7 +16,7 @@ const { authenticateUser, authorizeRoles } = require('../middlewares/authMiddlew
  *         - username
  *         - staffNumber
  *         - email
- *         - position
+ *         - role
  *       properties:
  *         username:
  *           type: string
@@ -27,9 +30,9 @@ const { authenticateUser, authorizeRoles } = require('../middlewares/authMiddlew
  *           type: string
  *           description: The user's email address
  *           example: "john.smith@example.com"
- *         position:
+ *         role:
  *           type: string
- *           description: The user's position ID (reference to Position model)
+ *           description: The user's role ID (reference to Role model)
  *           example: "60d21b4667d0d8992e610c85"
  *     UserResponse:
  *       type: object
@@ -50,10 +53,10 @@ const { authenticateUser, authorizeRoles } = require('../middlewares/authMiddlew
  *           type: string
  *           description: The user's email address
  *           example: "john.smith@example.com"
- *         position:
+ *         role:
  *           type: string
- *           description: The user's position
- *           example: "Admin"
+ *           description: The user's role
+ *           example: "superadmin"
  *     LoginRequest:
  *       type: object
  *       required:
@@ -150,6 +153,7 @@ const { authenticateUser, authorizeRoles } = require('../middlewares/authMiddlew
  *       required:
  *         - staffNumber
  *         - password
+ *         - roleName
  *       properties:
  *         staffNumber:
  *           type: string
@@ -159,6 +163,10 @@ const { authenticateUser, authorizeRoles } = require('../middlewares/authMiddlew
  *           type: string
  *           description: The user's desired password
  *           example: "securePassword123"
+ *         roleName:
+ *           type: string
+ *           description: The role to assign to the user
+ *           example: "staff"
  *   securitySchemes:
  *     bearerAuth:
  *       type: http
@@ -205,7 +213,7 @@ const { authenticateUser, authorizeRoles } = require('../middlewares/authMiddlew
  *       500:
  *         description: Internal server error
  */
-router.post('/register', AuthController.registerUser);
+router.post("/register", AuthController.registerUser);
 
 /**
  * @swagger
@@ -235,7 +243,7 @@ router.post('/register', AuthController.registerUser);
  *       500:
  *         description: Internal server error
  */
-router.post('/login', AuthController.loginUser);
+router.post("/login", AuthController.loginUser);
 
 /**
  * @swagger
@@ -263,7 +271,7 @@ router.post('/login', AuthController.loginUser);
  *       500:
  *         description: Internal server error
  */
-router.post('/refresh-token', AuthController.refreshToken);
+router.post("/refresh-token", AuthController.refreshToken);
 
 /**
  * @swagger
@@ -295,7 +303,7 @@ router.post('/refresh-token', AuthController.refreshToken);
  *       500:
  *         description: Internal server error
  */
-router.post('/logout', AuthController.logoutUser);
+router.post("/logout", AuthController.logoutUser);
 
 /**
  * @swagger
@@ -331,13 +339,13 @@ router.post('/logout', AuthController.logoutUser);
  *       500:
  *         description: Internal server error
  */
-router.post('/change-password', authenticateUser, AuthController.changePassword);
+router.post("/change-password", authenticateUser, AuthController.changePassword);
 
 /**
  * @swagger
  * /api/auth/reset-password:
  *   post:
- *     summary: Reset a user's password (Super Admin only)
+ *     summary: Reset a user's password (SuperAdmin only)
  *     tags: [Authentication]
  *     security:
  *       - bearerAuth: []
@@ -361,19 +369,19 @@ router.post('/change-password', authenticateUser, AuthController.changePassword)
  *       400:
  *         description: Bad request - missing required fields
  *       401:
- *         description: Unauthorized - not a Super Admin
+ *         description: Unauthorized - not a SuperAdmin
  *       404:
  *         description: User not found
  *       500:
  *         description: Internal server error
  */
-router.post('/reset-password', authenticateUser, authorizeRoles('Super Admin'), AuthController.resetPassword);
+router.post("/reset-password", authenticateUser, authorizeRoles("superadmin"), AuthController.resetPassword);
 
 /**
  * @swagger
  * /api/auth/change-email:
  *   post:
- *     summary: Change a user's email address (Super Admin only)
+ *     summary: Change a user's email address (SuperAdmin only)
  *     tags: [Authentication]
  *     security:
  *       - bearerAuth: []
@@ -399,13 +407,13 @@ router.post('/reset-password', authenticateUser, authorizeRoles('Super Admin'), 
  *       400:
  *         description: Bad request - missing required fields
  *       401:
- *         description: Unauthorized - not a Super Admin
+ *         description: Unauthorized - not a SuperAdmin
  *       404:
  *         description: User not found
  *       500:
  *         description: Internal server error
  */
-router.post('/change-email', authenticateUser, authorizeRoles('Super Admin'), AuthController.changeEmail);
+router.post("/change-email", authenticateUser, authorizeRoles("superadmin"), AuthController.changeEmail);
 
 /**
  * @swagger
@@ -435,6 +443,6 @@ router.post('/change-email', authenticateUser, authorizeRoles('Super Admin'), Au
  *       500:
  *         description: Internal server error
  */
-router.get('/profile', authenticateUser, AuthController.getUserProfile);
+router.get("/profile", authenticateUser, AuthController.getUserProfile);
 
 module.exports = router;
