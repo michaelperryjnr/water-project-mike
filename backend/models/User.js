@@ -5,7 +5,7 @@ const userSchema = new mongoose.Schema({
     staffNumber: {type: String, required: true, unique: true},
     email: {type: String, required: true, unique: true},
     hashedPassword: {type: String, required: true},
-    position: {type: mongoose.Schema.Types.ObjectId, ref: "Position", required: true},
+    role: {type: mongoose.Schema.Types.ObjectId, ref: "Role", required: true},
     refreshToken: {type: String, default: null},
 }, {
     timestamps: true
