@@ -445,4 +445,60 @@ router.post("/change-email", authenticateUser, authorizeRoles("superadmin"), Aut
  */
 router.get("/profile", authenticateUser, AuthController.getUserProfile);
 
+/**
+ * @swagger
+ * /api/auth/sa-update:
+ *   post:
+ *     summary: Update a user's details (SuperAdmin only)
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - userId
+ *               - updates
+ *             properties:
+ *               userId:
+ *                 type: string
+ *                 description: The unique ID of the user to be updated
+ *                 example: "60d21b4667d0d8992e610c85"
+ *               updates:
+ *                 type: object
+ *                 description: The fields to be updated (e.g., name, email, role)
+ *                 example:
+ *                   name: "John Smith"
+ *                   email: "john.smith@newdomain.com"
+ *                   role: "admin"
+ *     responses:
+ *       200:
+ *         description: User updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "User updated successfully"
+ *                 user:
+ *                   $ref: '#/components/schemas/UserResponse'
+ *       400:
+ *         description: Invalid request body or missing userId/updates
+ *       401:
+ *         description: Unauthorized - not a SuperAdmin
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
+ */
+router.post("/sa-update", authenticateUser, authorizeRoles("superadmin"), AuthController.saUpdate);
+
 module.exports = router;
