@@ -25,7 +25,11 @@ async function generateAccessToken(user) {
     }
 
     try {
-        return jwt.sign({ id: user._id, position: user.position }, CONFIG.ACCESS_TOKEN_SECRET, {
+        const payload = {
+            id: user._id,
+            role: user.role.name
+        };
+        return jwt.sign(payload, CONFIG.ACCESS_TOKEN_SECRET, {
             expiresIn: CONFIG.ACCESS_TOKEN_EXPIRATION,
         });
     } catch (error) {
@@ -39,7 +43,12 @@ async function generateRefreshToken(user) {
     }
 
     try {
-        return jwt.sign({ id: user._id, position: user.position }, CONFIG.REFRESH_TOKEN_SECRET, {
+        const payload = {
+          id: user._id,
+          role: user.role.name,
+        };
+
+        return jwt.sign(payload, CONFIG.REFRESH_TOKEN_SECRET, {
             expiresIn: CONFIG.REFRESH_TOKEN_EXPIRATION,
         });
     } catch (error) {
