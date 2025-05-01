@@ -40,6 +40,14 @@ exports.registerUser = async (req, res) => {
       });
     }
 
+    const normalizedRole = roleName.toLowerCase().trim();
+    if (normalizedRole === "superadmin" || normalizedRole === "admin") {
+      return res.status(STATUS_CODES.BAD_REQUEST).json({
+        message: "Only Super Admins can create new admins and superadmins",
+      });
+    }
+
+
     let role = await Role.findOne({ name: roleName.toLowerCase() });
 
     if (!role) {
@@ -86,17 +94,23 @@ exports.registerUser = async (req, res) => {
 exports.loginUser = async (req, res) => {
   try {
     Logger("User login attempt", req, "auth-controller");
-    const { staffNumber, password } = req.body;
 
-    if (!staffNumber || !password) {
+    const { identifier, password } = req.body;
+
+    if (!identifier || !password) {
       return res.status(STATUS_CODES.BAD_REQUEST).json({
-        message: "Staff number and password are required",
+        message: "Identifier and password are required",
       });
     }
 
-    const user = await User.findOne({ staffNumber: staffNumber }).populate(
-      "role"
-    );
+    // Search by username, email, or staffNumber
+    const user = await User.findOne({
+      $or: [
+        { username: identifier },
+        { email: identifier.toLowerCase() },
+        { staffNumber: identifier },
+      ],
+    }).populate("role");
 
     if (!user) {
       return res.status(STATUS_CODES.NOT_FOUND).json({
@@ -115,42 +129,35 @@ exports.loginUser = async (req, res) => {
       });
     }
 
-    const accessToken = await generateAccessToken({
-      id: user._id,
-      staffNumber: user.staffNumber,
-      role: user.role.name,
-    });
-
-    const refreshToken = await generateRefreshToken({
-      id: user._id,
-      staffNumber: user.staffNumber,
-    });
+    const accessToken = await generateAccessToken(user);
+    const refreshToken = await generateRefreshToken(user);
 
     user.refreshToken = refreshToken;
     await user.save();
 
     Logger("User logged in successfully", req, "auth-controller", "info");
 
-    res.status(STATUS_CODES.OK).json({
+    return res.status(STATUS_CODES.OK).json({
       message: "Login successful",
       user: {
         id: user._id,
         username: user.username,
         staffNumber: user.staffNumber,
         email: user.email,
-        role: user.role.name,
+        role: user.role.id || null
       },
       accessToken,
       refreshToken,
     });
   } catch (error) {
     Logger("Error logging in user", req, "auth-controller", "error", error);
-    res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
+    return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
       message: "Error logging in",
       error: error.message,
     });
   }
 };
+
 
 exports.refreshToken = async (req, res) => {
   try {
@@ -437,5 +444,53 @@ exports.getUserProfile = async (req, res) => {
       message: "Error getting user profile",
       error: error.message,
     });
+  }
+};
+
+exports.saUpdate = async (req, res) => {
+  try {
+    Logger("Super admin updating user", req, "auth-controller");
+
+    const { userId, updates } = req.body;
+
+    if (!userId || typeof updates !== "object") {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid request body" });
+    }
+
+    Logger(
+      `Super admin update ${JSON.stringify(updates)} for ${userId}`,
+      req,
+      "auth-controller"
+    );
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+    }
+
+    const allowedFields = ["name", "email", "role"];
+
+    Object.keys(updates).forEach((key) => {
+      if (allowedFields.includes(key)) {
+        user[key] = updates[key];
+      }
+    });
+
+    await user.save();
+
+    Logger("Super admin update successful", req, "auth-controller", "info");
+
+    return res.status(200).json({
+      success: true,
+      message: "User updated successfully",
+      user,
+    });
+  } catch (error) {
+    Logger("Super admin update error", req, "auth-controller", "error", error);
+    return res.status(500).json({ success: false, message: "Server error" });
   }
 };
