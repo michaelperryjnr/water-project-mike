@@ -149,11 +149,11 @@ export default function EmployeeSlideOver({ isOpen, onClose, data }) {
                           </dt>
                           <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:ml-6 sm:col-span-2">
                             <p>
-                              {capitalizeWords(data.nextOfKin.firstName)}{' '}
-                              {capitalizeWords(data.nextOfKin.lastName)} | Contact:{' '}
-                              {data.nextOfKin.mobileNumber} | Email: {data.nextOfKin.email} | Relation:{' '}
-                              {capitalizeWords(data.nextOfKin.relationship)} | Gender:{' '}
-                              {capitalizeWords(data.nextOfKin.gender)}
+                              {capitalizeWords(data.nextOfKin?.firstName)}{' '}
+                              {capitalizeWords(data.nextOfKin?.lastName)} | Contact:{' '}
+                              {data.nextOfKin?.mobileNumber} | Email: {data.nextOfKin?.email} | Relation:{' '}
+                              {capitalizeWords(data.nextOfKin?.relationship)} | Gender:{' '}
+                              {capitalizeWords(data.nextOfKin?.gender)}
                             </p>
                           </dd>
                         </div>
@@ -226,7 +226,7 @@ export default function EmployeeSlideOver({ isOpen, onClose, data }) {
                             Nationality
                           </dt>
                           <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:ml-6 sm:col-span-2">
-                            {capitalizeWords(data.nationality.nationalityName)}
+                            {capitalizeWords(data.nationality?.nationalityName)}
                           </dd>
                         </div>
                         <div className="sm:flex sm:px-6 sm:py-5">
@@ -234,8 +234,8 @@ export default function EmployeeSlideOver({ isOpen, onClose, data }) {
                             Country Of Origin
                           </dt>
                           <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:ml-6 sm:col-span-2 inline-flex">
-                            {capitalizeWords(data.country.name)}{' '}
-                            <img className="size-5" src={data.country.flag} alt={`${data.country.name} flag`} />
+                            {capitalizeWords(data.country?.name)}{' '}
+                            <img className="size-5" src={data.country?.flag} alt={`${data.country?.name} flag`} />
                           </dd>
                         </div>
                         <div className="sm:flex sm:px-6 sm:py-5">
@@ -283,9 +283,9 @@ export default function EmployeeSlideOver({ isOpen, onClose, data }) {
                             Contract Type
                           </dt>
                           <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:ml-6 sm:col-span-2">
-                            {capitalizeWords(data.contractType.contractTypeName)} | Duration/Period:{' '}
-                            {data.contractType.contractTypeDuration}{' '}
-                            {capitalizeWords(data.contractType.contractTypeDurationUnit)}
+                            {capitalizeWords(data.contractType?.contractTypeName)} | Duration/Period:{' '}
+                            {data.contractType?.contractTypeDuration}{' '}
+                            {capitalizeWords(data.contractType?.contractTypeDurationUnit)}
                           </dd>
                         </div>
                         <div className="sm:flex sm:px-6 sm:py-5">

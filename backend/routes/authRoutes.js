@@ -60,13 +60,13 @@ const {
  *     LoginRequest:
  *       type: object
  *       required:
- *         - staffNumber
+ *         - identifier
  *         - password
  *       properties:
- *         staffNumber:
+ *         identifier:
  *           type: string
- *           description: The staff identification number
- *           example: "EMP123456"
+ *           description: The user's identifier (can be username, email, or staffNumber)
+ *           example: "EMP123456/johndoe@email.com/johnsmith"
  *         password:
  *           type: string
  *           description: The user's password
