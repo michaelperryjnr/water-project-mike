@@ -1,6 +1,6 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const InventoryCategoryController = require('../controllers/inventoryCategoryController');
+const InventoryCategoryController = require("../controllers/inventoryCategoryController");
 
 /**
  * @swagger
@@ -61,7 +61,7 @@ const InventoryCategoryController = require('../controllers/inventoryCategoryCon
  *       500:
  *         description: Server error
  */
-router.get('/', InventoryCategoryController.getAllCategories);
+router.get("/", InventoryCategoryController.getAllCategories);
 
 /**
  * @swagger
@@ -106,7 +106,7 @@ router.get('/', InventoryCategoryController.getAllCategories);
  *       500:
  *         description: Server error
  */
-router.get('/:id', InventoryCategoryController.getCategoryById);
+router.get("/:id", InventoryCategoryController.getCategoryById);
 
 /**
  * @swagger
@@ -137,7 +137,7 @@ router.get('/:id', InventoryCategoryController.getCategoryById);
  *       500:
  *         description: Server error
  */
-router.post('/', InventoryCategoryController.createCategory);
+router.post("/", InventoryCategoryController.createCategory);
 
 /**
  * @swagger
@@ -177,7 +177,7 @@ router.post('/', InventoryCategoryController.createCategory);
  *       500:
  *         description: Server error
  */
-router.put('/:id', InventoryCategoryController.updateCategory);
+router.put("/:id", InventoryCategoryController.updateCategory);
 
 /**
  * @swagger
@@ -211,13 +211,14 @@ router.put('/:id', InventoryCategoryController.updateCategory);
  *       500:
  *         description: Server error
  */
-router.delete('/:id', InventoryCategoryController.deleteCategory);
+router.delete("/:id", InventoryCategoryController.deleteCategory);
 
 /**
  * @swagger
  * /api/categories/hierarchy:
  *   get:
  *     summary: Get category hierarchy
+ *     description: Returns the full category tree with subcategories and item counts
  *     tags: [InventoryCategories]
  *     responses:
  *       200:
@@ -229,24 +230,50 @@ router.delete('/:id', InventoryCategoryController.deleteCategory);
  *               properties:
  *                 success:
  *                   type: boolean
+ *                   example: true
  *                 data:
  *                   type: array
  *                   items:
- *                     type: object
- *                     properties:
- *                       _id:
- *                         type: string
- *                       name:
- *                         type: string
- *                       description:
- *                         type: string
- *                       itemCount:
- *                         type: integer
- *                       children:
- *                         type: array
+ *                     $ref: '#/components/schemas/CategoryNode'
  *       500:
  *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: Failed to fetch category hierarchy
+ *                 error:
+ *                   type: string
+ *                   example: Internal server error
+ *
+ * components:
+ *   schemas:
+ *     CategoryNode:
+ *       type: object
+ *       properties:
+ *         _id:
+ *           type: string
+ *           example: 60d21b4667d0d8992e610c85
+ *         name:
+ *           type: string
+ *           example: Electronics
+ *         description:
+ *           type: string
+ *           example: Electronic devices and accessories
+ *         itemCount:
+ *           type: integer
+ *           example: 42
+ *         children:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/CategoryNode'
  */
-router.get('/hierarchy', InventoryCategoryController.getCategoryHierarchy);
+router.get("/hierarchy", InventoryCategoryController.getCategoryHierarchy);
 
 module.exports = router;

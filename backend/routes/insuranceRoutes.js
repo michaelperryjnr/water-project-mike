@@ -1,6 +1,6 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const InsuranceController = require('../controllers/insuranceController');
+const InsuranceController = require("../controllers/insuranceController");
 
 /**
  * @swagger
@@ -23,7 +23,7 @@ const InsuranceController = require('../controllers/insuranceController');
  *         provider:
  *           type: string
  *           description: Insurance provider company name
- *           example: "acme insurance"
+ *           example: "nationwide"
  *         coverageAmount:
  *           type: number
  *           description: The amount of coverage in currency units
@@ -44,7 +44,7 @@ const InsuranceController = require('../controllers/insuranceController');
  *           example: "full coverage auto insurance for sedan vehicles"
  *       example:
  *         policyNumber: "pol-123456"
- *         provider: "acme insurance"
+ *         provider: "nationwide"
  *         coverageAmount: 100000
  *         insuranceType: "auto"
  *         autoInsuranceType: "comprehensive"
@@ -76,7 +76,7 @@ const InsuranceController = require('../controllers/insuranceController');
  *       500:
  *         description: Internal server error
  */
-router.get('/', InsuranceController.getAllInsurance);
+router.get("/", InsuranceController.getAllInsurance);
 
 /**
  * @swagger
@@ -103,7 +103,7 @@ router.get('/', InsuranceController.getAllInsurance);
  *       500:
  *         description: Internal server error
  */
-router.get('/:id', InsuranceController.getInsuranceById);
+router.get("/:id", InsuranceController.getInsuranceById);
 
 /**
  * @swagger
@@ -133,7 +133,7 @@ router.get('/:id', InsuranceController.getInsuranceById);
  *       500:
  *         description: Internal server error
  */
-router.get('/type/:type', InsuranceController.getInsuranceByType);
+router.get("/type/:type", InsuranceController.getInsuranceByType);
 
 /**
  * @swagger
@@ -170,7 +170,7 @@ router.get('/type/:type', InsuranceController.getInsuranceByType);
  *       500:
  *         description: Internal server error
  */
-router.get('/expiring', InsuranceController.getExpiringPolicies);
+router.get("/expiring", InsuranceController.getExpiringPolicies);
 
 /**
  * @swagger
@@ -196,7 +196,7 @@ router.get('/expiring', InsuranceController.getExpiringPolicies);
  *       500:
  *         description: Internal server error
  */
-router.post('/', InsuranceController.createInsurance);
+router.post("/", InsuranceController.createInsurance);
 
 /**
  * @swagger
@@ -231,7 +231,7 @@ router.post('/', InsuranceController.createInsurance);
  *       500:
  *         description: Internal server error
  */
-router.put('/:id', InsuranceController.updateInsurance);
+router.put("/:id", InsuranceController.updateInsurance);
 
 /**
  * @swagger
@@ -254,6 +254,6 @@ router.put('/:id', InsuranceController.updateInsurance);
  *       500:
  *         description: Internal server error
  */
-router.delete('/:id', InsuranceController.deleteInsurance);
+router.delete("/:id", InsuranceController.deleteInsurance);
 
 module.exports = router;
