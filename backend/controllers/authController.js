@@ -14,11 +14,11 @@ const {
 exports.registerUser = async (req, res) => {
   try {
     Logger("Registering user", req, "auth-controller");
-    const { staffNumber, password, roleName } = req.body;
+    const {username, staffNumber, password, roleName } = req.body;
 
-    if (!staffNumber || !password || !roleName) {
+    if (!username|| !staffNumber || !password || !roleName) {
       return res.status(STATUS_CODES.BAD_REQUEST).json({
-        message: "Staff number, password, and role are required",
+        message: "Username, Staff number, password, and role are required",
       });
     }
 
@@ -61,7 +61,7 @@ exports.registerUser = async (req, res) => {
     const hashedPassword = await hashPassword(password);
 
     const newUser = new User({
-      username: employee.username,
+      username,
       staffNumber: employee.staffNumber,
       email: employee.email,
       hashedPassword: hashedPassword,

@@ -151,10 +151,15 @@ const {
  *     RegistrationRequest:
  *       type: object
  *       required:
+ *         - username
  *         - staffNumber
  *         - password
  *         - roleName
  *       properties:
+ *         username:
+ *          type: string
+ *          description: The user's username
+ *          example: "johnsmith"
  *         staffNumber:
  *           type: string
  *           description: The staff identification number

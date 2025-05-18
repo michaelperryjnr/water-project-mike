@@ -129,6 +129,9 @@ function startServer() {
     const authRoutes = require("./routes/authRoutes")
     app.use("/api/auth", authRoutes)
 
+    const roleRoutes = require("./routes/roleRoutes");
+    app.use("/api/roles", roleRoutes);
+
     //Start the server
     const server = app.listen(port, () =>
       console.log(`Server running on http://localhost:${port}`)

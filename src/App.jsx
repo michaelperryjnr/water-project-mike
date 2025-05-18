@@ -10,6 +10,7 @@ import Departments from "./Pages/Departments/Departments";
 import Vehicles from "./Pages/Vehicles/Vehicles";
 import Insurance from "./Pages/Insurance/Insurance";
 import RoadWorth from "./Pages/RoadWorth/RoadWorth";
+import UserProfiles from "./Pages/UserProfiles";
 /* import UpdateInsuranceForm2 from "./Components/Forms/UpdateForms/UpdateInsuranceForm"; */
 /* import UpdateTestForm from "./Components/UpdateTestForm"; */
 
@@ -29,6 +30,7 @@ function App() {
           <Route exact path="/vehicles" element={<Vehicles />} />
           <Route exact path="/insurance" element={<Insurance />} />
           <Route exact path="/roadworth" element={<RoadWorth />} />
+          <Route exact path="/profile" element={<UserProfiles />} />
           {/* <Route path="/insurance/edit/:id" element={<UpdateTestForm />} /> */} {/* This is for creating a standalone form */}
           <Route exact path="/test" element={<TestForm3 />} />
         </Routes>
