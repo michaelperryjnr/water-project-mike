@@ -265,7 +265,7 @@ exports.adjustStock = async (req, res) => {
     // Create stock transaction record
     await StockTransaction.create({
       item: req.params.id,
-      transactionType: 'Adjustment',
+      transactionType: 'adjustment',
       quantity,
       location,
       reference: reason || 'Manual adjustment'

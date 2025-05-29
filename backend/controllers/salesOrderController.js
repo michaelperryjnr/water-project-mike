@@ -4,6 +4,7 @@ const StockTransaction = require('../models/StockTransaction');
 const mongoose = require('mongoose');
 const {STATUS_CODES} = require("../config/core")
 const Logger = require("../utils/logger")
+const isTransactionSupported = require("../utils/transactionSupport");
 
 // Generate a unique order number
 const generateOrderNumber = async () => {
@@ -121,11 +122,8 @@ exports.getSalesOrderById = async (req, res) => {
 
 // Create new sales order
 exports.createSalesOrder = async (req, res) => {
-  const session = await mongoose.startSession();
-  session.startTransaction();
-
   try {
-    Logger("Creating new sales order", req, "salesOrderController")
+    Logger("Creating new sales order", req, "salesOrderController");
     const { 
       customer, 
       items, 
@@ -137,16 +135,32 @@ exports.createSalesOrder = async (req, res) => {
       deliveryDate
     } = req.body;
     
+    // Input validation
+    if (!customer || !items || !Array.isArray(items) || items.length === 0) {
+      return res.status(STATUS_CODES.BAD_REQUEST).json({
+        success: false,
+        message: 'Customer and items are required'
+      });
+    }
+    
     // Generate unique order number
     const orderNumber = await generateOrderNumber();
     
-    // Validate and process items
+    // Validate and process items (validation pass first)
     const processedItems = [];
     let calculatedSubtotal = 0;
+    const itemsToUpdate = [];
     
+    // First pass: Validate everything before making any changes
     for (const item of items) {
-      // Check if inventory item exists and has enough stock
-      const inventoryItem = await InventoryItem.findById(item.item).session(session);
+      if (!item.item || !item.quantity || !item.unitPrice) {
+        return res.status(STATUS_CODES.BAD_REQUEST).json({
+          success: false,
+          message: 'Each item must have item ID, quantity, and unit price'
+        });
+      }
+      
+      const inventoryItem = await InventoryItem.findById(item.item);
       
       if (!inventoryItem) {
         return res.status(STATUS_CODES.NOT_FOUND).json({
@@ -189,27 +203,25 @@ exports.createSalesOrder = async (req, res) => {
         serialNumbers: item.serialNumbers || []
       });
       
-      // Update inventory quantity
-      inventoryItem.quantityInStock -= item.quantity;
-      await inventoryItem.save({ session });
-      
-      // Create stock transaction
-      const stockTransaction = new StockTransaction({
-        item: item.item,
-        transactionType: 'StockOut',
-        quantity: item.quantity,
-        location: 'RetailStore', // Default location for sales
-        reference: `Sales Order: ${orderNumber}`
+      // Store items to update (don't update yet)
+      itemsToUpdate.push({
+        inventoryItem,
+        quantityToDeduct: item.quantity,
+        stockTransaction: {
+          item: item.item,
+          transactionType: 'stockout',
+          quantity: item.quantity,
+          location: 'retailstore',
+          reference: `Sales Order: ${orderNumber}`
+        }
       });
-      
-      await stockTransaction.save({ session });
     }
     
     // Validate calculated amounts
     if (Math.abs(calculatedSubtotal - subtotal) > 0.01) {
       return res.status(STATUS_CODES.BAD_REQUEST).json({
         success: false,
-        message: `Subtotal mismatch. Calculated: ${calculatedSubtotal}, Provided: ${subtotal}`
+        message: `Subtotal mismatch. Calculated: ${calculatedSubtotal.toFixed(2)}, Provided: ${subtotal}`
       });
     }
     
@@ -217,36 +229,52 @@ exports.createSalesOrder = async (req, res) => {
     if (Math.abs(calculatedTotal - totalAmount) > 0.01) {
       return res.status(STATUS_CODES.BAD_REQUEST).json({
         success: false,
-        message: `Total amount mismatch. Calculated: ${calculatedTotal}, Provided: ${totalAmount}`
+        message: `Total amount mismatch. Calculated: ${calculatedTotal.toFixed(2)}, Provided: ${totalAmount}`
       });
     }
     
-    // Create sales order
+    // All validations passed, now execute the changes
+    
+    // 1. Create sales order first
     const salesOrder = new SalesOrder({
       orderNumber,
       customer,
       items: processedItems,
-      subtotal,
+      subtotal: calculatedSubtotal,
       taxAmount: taxAmount || 0,
-      totalAmount,
+      totalAmount: calculatedTotal,
       paymentStatus,
       paymentMethod,
-      deliveryDate
+      deliveryDate,
+      status: 'pending'
     });
     
-    await salesOrder.save({ session });
+    const savedOrder = await salesOrder.save();
     
-    await session.commitTransaction();
-    session.endSession();
+    // 2. Update inventory and create stock transactions
+    for (const update of itemsToUpdate) {
+      // Update inventory quantity
+      update.inventoryItem.quantityInStock -= update.quantityToDeduct;
+      await update.inventoryItem.save();
+      
+      // Create stock transaction
+      const stockTransaction = new StockTransaction(update.stockTransaction);
+      await stockTransaction.save();
+    }
+
+    // 3. Populate the response with item details
+    const populatedOrder = await SalesOrder.findById(savedOrder._id)
+      .populate('customer', 'name email phone')
+      .populate('items.item', 'itemCode itemDescription unitOfMeasure');
 
     res.status(STATUS_CODES.CREATED).json({
       success: true,
-      data: salesOrder
+      data: populatedOrder,
+      message: 'Sales order created successfully'
     });
+    
   } catch (error) {
-    Logger("Failed to create sales order", req, "salesOrderController", "error", error)
-    await session.abortTransaction();
-    session.endSession();
+    Logger("Failed to create sales order", req, "salesOrderController", "error", error);
     
     res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
       success: false,
@@ -258,8 +286,6 @@ exports.createSalesOrder = async (req, res) => {
 
 // Update sales order
 exports.updateSalesOrder = async (req, res) => {
-  const session = await mongoose.startSession();
-  session.startTransaction();
 
   try {
     Logger("Updating sales order", req, "salesOrderController")
@@ -268,7 +294,6 @@ exports.updateSalesOrder = async (req, res) => {
     // Get original sales order
     const originalOrder = await SalesOrder.findById(id)
       .populate('items.item')
-      .session(session);
     
     if (!originalOrder) {
       return res.status(STATUS_CODES.NOT_FOUND).json({
@@ -299,21 +324,21 @@ exports.updateSalesOrder = async (req, res) => {
     if (status === 'Cancelled' && originalOrder.status !== 'Cancelled') {
       // Return items to inventory
       for (const item of originalOrder.items) {
-        const inventoryItem = await InventoryItem.findById(item.item._id).session(session);
+        const inventoryItem = await InventoryItem.findById(item.item._id)
         if (inventoryItem) {
           inventoryItem.quantityInStock += item.quantity;
-          await inventoryItem.save({ session });
+          await inventoryItem.save();
           
           // Create stock transaction for the return
           const stockTransaction = new StockTransaction({
             item: item.item._id,
             transactionType: 'Return',
             quantity: item.quantity,
-            location: 'RetailStore',
+            location: 'retailstore',
             reference: `Cancelled Sales Order: ${originalOrder.orderNumber}`
           });
           
-          await stockTransaction.save({ session });
+          await stockTransaction.save();
         }
       }
     }
@@ -322,20 +347,15 @@ exports.updateSalesOrder = async (req, res) => {
     const updatedOrder = await SalesOrder.findByIdAndUpdate(
       id,
       { $set: updates },
-      { new: true, runValidators: true, session }
+      { new: true, runValidators: true}
     ).populate('items.item', 'itemCode itemDescription');
     
-    await session.commitTransaction();
-    session.endSession();
-
     res.status(STATUS_CODES.OK).json({
       success: true,
       data: updatedOrder
     });
   } catch (error) {
     Logger("Failed to update sales order", req, "salesOrderController", "error", error)
-    await session.abortTransaction();
-    session.endSession();
     
     res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
       success: false,
@@ -347,16 +367,12 @@ exports.updateSalesOrder = async (req, res) => {
 
 // Delete sales order (only allowed for Pending orders)
 exports.deleteSalesOrder = async (req, res) => {
-  const session = await mongoose.startSession();
-  session.startTransaction();
-
   try {
     Logger("Deleting sales order", req, "salesOrderController")
     const { id } = req.params;
     
     const salesOrder = await SalesOrder.findById(id)
       .populate('items.item')
-      .session(session);
     
     if (!salesOrder) {
       return res.status(STATUS_CODES.NOT_FOUND).json({
@@ -375,29 +391,26 @@ exports.deleteSalesOrder = async (req, res) => {
     
     // Return items to inventory
     for (const item of salesOrder.items) {
-      const inventoryItem = await InventoryItem.findById(item.item._id).session(session);
+      const inventoryItem = await InventoryItem.findById(item.item._id);
       if (inventoryItem) {
         inventoryItem.quantityInStock += item.quantity;
-        await inventoryItem.save({ session });
+        await inventoryItem.save();
         
         // Create stock transaction for the return
         const stockTransaction = new StockTransaction({
           item: item.item._id,
           transactionType: 'Return',
           quantity: item.quantity,
-          location: 'RetailStore',
+          location: 'retailStore',
           reference: `Deleted Sales Order: ${salesOrder.orderNumber}`
         });
         
-        await stockTransaction.save({ session });
+        await stockTransaction.save();
       }
     }
     
     // Delete the order
-    await SalesOrder.findByIdAndDelete(id, { session });
-    
-    await session.commitTransaction();
-    session.endSession();
+    await SalesOrder.findByIdAndDelete(id);
 
     res.status(STATUS_CODES.OK).json({
       success: true,
@@ -405,8 +418,6 @@ exports.deleteSalesOrder = async (req, res) => {
     });
   } catch (error) {
     Logger("Failed to delete sales order", req, "salesOrderController", "error", error)
-    await session.abortTransaction();
-    session.endSession();
     
     res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
       success: false,
