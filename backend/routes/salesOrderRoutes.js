@@ -199,6 +199,102 @@ router.get('/', salesOrderController.getAllSalesOrders);
 
 /**
  * @swagger
+ * /api/sales-orders/summary:
+ *   get:
+ *     summary: Get sales summary statistics
+ *     tags: [Sales Orders]
+ *     parameters:
+ *       - in: query
+ *         name: startDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Start date for the summary
+ *       - in: query
+ *         name: endDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: End date for the summary
+ *     responses:
+ *       200:
+ *         description: Sales summary statistics
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     totalSales:
+ *                       type: integer
+ *                     salesByStatus:
+ *                       type: array
+ *                     salesByPaymentStatus:
+ *                       type: array
+ *                     topSellingItems:
+ *                       type: array
+ *                     salesTrend:
+ *                       type: array
+ *       500:
+ *         description: Server error
+ */
+router.get('/summary', salesOrderController.getSalesSummary);
+
+/**
+ * @swagger
+ * /api/sales-orders/customer-history:
+ *   get:
+ *     summary: Get customer purchase history
+ *     tags: [Sales Orders]
+ *     parameters:
+ *       - in: query
+ *         name: customerName
+ *         schema:
+ *           type: string
+ *         description: Customer name to search for
+ *       - in: query
+ *         name: customerEmail
+ *         schema:
+ *           type: string
+ *         description: Customer email to search for
+ *     responses:
+ *       200:
+ *         description: Customer purchase history
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     customer:
+ *                       type: object
+ *                     totalOrders:
+ *                       type: integer
+ *                     totalSpent:
+ *                       type: number
+ *                     orders:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/SalesOrder'
+ *                     frequentlyPurchasedItems:
+ *                       type: array
+ *       400:
+ *         description: Missing customer name or email
+ *       500:
+ *         description: Server error
+ */
+router.get('/customer-history', salesOrderController.getCustomerPurchaseHistory);
+
+/**
+ * @swagger
  * /api/sales-orders/{id}:
  *   get:
  *     summary: Get a sales order by ID
@@ -379,101 +475,5 @@ router.put('/:id', salesOrderController.updateSalesOrder);
  *         description: Server error
  */
 router.delete('/:id', salesOrderController.deleteSalesOrder);
-
-/**
- * @swagger
- * /api/sales-orders/summary:
- *   get:
- *     summary: Get sales summary statistics
- *     tags: [Sales Orders]
- *     parameters:
- *       - in: query
- *         name: startDate
- *         schema:
- *           type: string
- *           format: date
- *         description: Start date for the summary
- *       - in: query
- *         name: endDate
- *         schema:
- *           type: string
- *           format: date
- *         description: End date for the summary
- *     responses:
- *       200:
- *         description: Sales summary statistics
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 data:
- *                   type: object
- *                   properties:
- *                     totalSales:
- *                       type: integer
- *                     salesByStatus:
- *                       type: array
- *                     salesByPaymentStatus:
- *                       type: array
- *                     topSellingItems:
- *                       type: array
- *                     salesTrend:
- *                       type: array
- *       500:
- *         description: Server error
- */
-router.get('/summary', salesOrderController.getSalesSummary);
-
-/**
- * @swagger
- * /api/sales-orders/customer-history:
- *   get:
- *     summary: Get customer purchase history
- *     tags: [Sales Orders]
- *     parameters:
- *       - in: query
- *         name: customerName
- *         schema:
- *           type: string
- *         description: Customer name to search for
- *       - in: query
- *         name: customerEmail
- *         schema:
- *           type: string
- *         description: Customer email to search for
- *     responses:
- *       200:
- *         description: Customer purchase history
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 data:
- *                   type: object
- *                   properties:
- *                     customer:
- *                       type: object
- *                     totalOrders:
- *                       type: integer
- *                     totalSpent:
- *                       type: number
- *                     orders:
- *                       type: array
- *                       items:
- *                         $ref: '#/components/schemas/SalesOrder'
- *                     frequentlyPurchasedItems:
- *                       type: array
- *       400:
- *         description: Missing customer name or email
- *       500:
- *         description: Server error
- */
-router.get('/customer-history', salesOrderController.getCustomerPurchaseHistory);
 
 module.exports = router;

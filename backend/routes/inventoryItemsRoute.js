@@ -157,6 +157,33 @@ router.get('/', InventoryItemController.getAllItems);
 
 /**
  * @swagger
+ * /api/items/low-stock:
+ *   get:
+ *     summary: Get low stock items
+ *     tags: [InventoryItems]
+ *     responses:
+ *       200:
+ *         description: List of items with stock at or below reorder level
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 count:
+ *                   type: integer
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/InventoryItem'
+ *       500:
+ *         description: Server error
+ */
+router.get('/low-stock', InventoryItemController.getLowStockItems);
+
+/**
+ * @swagger
  * /api/items/{id}:
  *   get:
  *     summary: Get a single inventory item by ID
@@ -384,31 +411,5 @@ router.delete('/:id', InventoryItemController.deleteItem);
  */
 router.post('/:id/stock', InventoryItemController.adjustStock);
 
-/**
- * @swagger
- * /api/items/low-stock:
- *   get:
- *     summary: Get low stock items
- *     tags: [InventoryItems]
- *     responses:
- *       200:
- *         description: List of items with stock at or below reorder level
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 count:
- *                   type: integer
- *                 data:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/InventoryItem'
- *       500:
- *         description: Server error
- */
-router.get('/low-stock', InventoryItemController.getLowStockItems);
 
 module.exports = router;
