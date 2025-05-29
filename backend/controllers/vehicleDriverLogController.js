@@ -5,17 +5,23 @@ const Logger = require("../utils/logger")
 exports.getVehicleDriverLogs = async(req, res) => {
     try{
         Logger("Fetching all vehicle driver logs", req, "vehicleDriverLogController")
-        const vehicleDriverLogs = await VehicleDriverLogs.find()
+        const vehicleDriverLogs = await VehicleDriverLog.find()
             .populate({
                 path:"vehicleId",
                 select: "registrationNumber model make yearOfManufacture"
             })
             .populate({
                 path: "employeeId",
-                select: 'firsName lastName staffNumber email mobilePhone'
+                select: 'firstName lastName staffNumber email mobilePhone'
             })
 
-        res.status(200).json(vehicleDriverLogs)
+            const totalCount = await VehicleDriverLog.countDocuments()
+
+            res.status(200).json({
+                success: true,
+                logs: vehicleDriverLogs,
+                totalCount: totalCount,
+            });
     }catch(error){
         Logger("Failed to fetch vehicle driver logs", req, "vehicleDriverLogController", "error", error)
         res.status(500).json({message: error.message})
@@ -27,7 +33,7 @@ exports.getVehicleDriverLogs = async(req, res) => {
 exports.getVehicleDriverLogById = async(req, res) => {
     try{
         Logger("Fetching vehicle driver log by ID", req, "vehicleDriverLogController")
-        const vehicleDriverLog = await VehicleDriverLog.findById(req.params.id)
+        const vehicleDriverLogs = await VehicleDriverLog.findById(req.params.id)
             .populate({
                 path: "vehicleId",
                 select: "registrationNumber model make year yearOfManufacture"
@@ -37,8 +43,14 @@ exports.getVehicleDriverLogById = async(req, res) => {
                 select: "firstName lastName staffNumber email mobilePhone"
             })
 
-        if (!vehicleDriverLog) return res.status(404).json({message: "Vehicle driver log not found"})
-        res.status(200).json(vehicleDriverLog);
+        const totalCount = await VehicleDriverLog.countDocuments({_id: req.params.id})
+
+        if (!vehicleDriverLogs) return res.status(404).json({message: "Vehicle driver log not found"})
+        res.status(200).json({
+            success: true,
+            logs: vehicleDriverLogs,
+            totalCount: totalCount,
+        });
     }catch(error){
         Logger("Failed to fetch vehicle driver log by ID", req, "vehicleDriverLogController", "error", error)
         res.status(500).json({message: error.message})

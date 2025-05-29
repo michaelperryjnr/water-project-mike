@@ -11,8 +11,8 @@ exports.getStockByLocation = async (req, res) => {
     const { location } = req.params;
     
     // Validate location
-    const validLocations = ['Warehouse', 'FinishedGoodsStore', 'RetailStore', 'Transit'];
-    if (!validLocations.includes(location)) {
+    const validLocations = ['warehouse', 'finishedgoodsstore', 'retailstore', 'transit'];
+    if (!validLocations.includes(location.toLowerCase())) {
       return res.status(STATUS_CODES.BAD_REQUEST).json({
         success: false,
         message: "Invalid location"
@@ -24,7 +24,7 @@ exports.getStockByLocation = async (req, res) => {
     const skip = (page - 1) * limit;
     
     // Build filter
-    const filter = { location };
+    const filter = { location: location.toLowerCase()  };
     // Only show items with stock by default, unless showAll=true
     if (req.query.showAll !== 'true') {
       filter.quantity = { $gt: 0 };
@@ -47,7 +47,7 @@ exports.getStockByLocation = async (req, res) => {
       count: stockItems.length,
       totalPages: Math.ceil(total / limit),
       currentPage: page,
-      location,
+      location: location.toLowerCase(),
       data: stockItems
     });
   } catch (error) {
@@ -121,15 +121,15 @@ exports.transferStock = async (req, res) => {
       });
     }
     
-    const validLocations = ['Warehouse', 'FinishedGoodsStore', 'RetailStore', 'Transit'];
-    if (!validLocations.includes(fromLocation) || !validLocations.includes(toLocation)) {
+    const validLocations = ['warehouse', 'finishedgoodsstore', 'retailstore', 'transit'];
+    if (!validLocations.includes(fromLocation.toLowerCase()) || !validLocations.includes(toLocation.toLowerCase())) {
       return res.status(STATUS_CODES.BAD_REQUEST).json({
         success: false,
         message: "Invalid location"
       });
     }
     
-    if (fromLocation === toLocation) {
+    if (fromLocation.toLowerCase() === toLocation.toLowerCase()) {
       return res.status(STATUS_CODES.BAD_REQUEST).json({
         success: false,
         message: "Source and destination locations cannot be the same"
@@ -148,7 +148,7 @@ exports.transferStock = async (req, res) => {
     // Check source location has enough stock
     let sourceLocation = await StockLocation.findOne({
       item: itemId,
-      location: fromLocation
+      location: fromLocation.toLowerCase()
     });
     
     if (!sourceLocation || sourceLocation.quantity < quantity) {
@@ -161,13 +161,13 @@ exports.transferStock = async (req, res) => {
     // Get or create destination location
     let destLocation = await StockLocation.findOne({
       item: itemId,
-      location: toLocation
+      location: toLocation.toLowerCase()
     });
     
     if (!destLocation) {
       destLocation = new StockLocation({
         item: itemId,
-        location: toLocation,
+        location: toLocation.toLowerCase(),
         quantity: 0
       });
     }
@@ -185,17 +185,17 @@ exports.transferStock = async (req, res) => {
     
     await StockTransaction.create({
       item: itemId,
-      transactionType: 'StockOut',
+      transactionType: 'stockout',
       quantity: -quantity,
-      location: fromLocation,
+      location: fromLocation.toLowerCase(),
       reference: transactionRef
     });
     
     await StockTransaction.create({
       item: itemId,
-      transactionType: 'StockIn',
+      transactionType: 'stockin',
       quantity: quantity,
-      location: toLocation,
+      location: toLocation.toLowerCase(),
       reference: transactionRef
     });
     

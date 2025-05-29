@@ -16,9 +16,9 @@ exports.getAllTransactions = async (req, res) => {
     
     if (req.query.item) filter.item = req.query.item;
     if (req.query.transactionType) filter.transactionType = req.query.transactionType;
-    if (req.query.location) filter.location = req.query.location;
+    if (req.query.location) filter.location = req.query.location.toLowerCase();
     if (req.query.reference) filter.reference = { $regex: req.query.reference, $options: 'i' };
-    
+
     // Date range filter
     if (req.query.startDate && req.query.endDate) {
       filter.createdAt = {
@@ -86,8 +86,6 @@ exports.getTransactionById = async (req, res) => {
 
 // Create new transaction
 exports.createTransaction = async (req, res) => {
-  const session = await mongoose.startSession();
-  session.startTransaction();
 
   try {
     Logger("Creating new transaction", req, "stockTransactionController");
@@ -107,14 +105,14 @@ exports.createTransaction = async (req, res) => {
       item,
       transactionType,
       quantity,
-      location,
+      location: location.toLowerCase(),
       reference
     });
 
     // Update inventory quantity based on transaction type
-    if (transactionType === 'StockIn' || transactionType === 'Return') {
+    if (transactionType === 'stockin' || transactionType === 'return') {
       inventoryItem.quantityInStock += quantity;
-    } else if (transactionType === 'StockOut') {
+    } else if (transactionType === 'stockout') {
       // Check if enough stock
       if (inventoryItem.quantityInStock < quantity) {
         return res.status(STATUS_CODES.BAD_REQUEST).json({
@@ -123,24 +121,22 @@ exports.createTransaction = async (req, res) => {
         });
       }
       inventoryItem.quantityInStock -= quantity;
-    } else if (transactionType === 'Adjustment') {
+    } else if (transactionType === 'adjustment') {
       // For adjustments, quantity can be positive or negative
       inventoryItem.quantityInStock += quantity;
       // Prevent negative inventory
       if (inventoryItem.quantityInStock < 0) {
         return res.status(STATUS_CODES.BAD_REQUEST).json({
           success: false,
-          message: 'Adjustment would result in negative inventory'
+          message: 'adjustment would result in negative inventory'
         });
       }
     }
 
     // Save both changes
-    await transaction.save({ session });
-    await inventoryItem.save({ session });
+    await transaction.save();
+    await inventoryItem.save();
     
-    await session.commitTransaction();
-    session.endSession();
 
     res.status(STATUS_CODES.CREATED).json({
       success: true,
@@ -148,8 +144,6 @@ exports.createTransaction = async (req, res) => {
     });
   } catch (error) {
     Logger("Failed to create transaction", req, "stockTransactionController", "error", error);
-    await session.abortTransaction();
-    session.endSession();
     
     res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
       success: false,
@@ -161,9 +155,6 @@ exports.createTransaction = async (req, res) => {
 
 // Update transaction
 exports.updateTransaction = async (req, res) => {
-  const session = await mongoose.startSession();
-  session.startTransaction();
-
   try {
     Logger("Updating transaction", req, "stockTransactionController");
     const { id } = req.params;
@@ -187,20 +178,20 @@ exports.updateTransaction = async (req, res) => {
     }
 
     // Revert the original transaction's effect on inventory
-    if (originalTransaction.transactionType === 'StockIn' || originalTransaction.transactionType === 'Return') {
+    if (originalTransaction.transactionType === 'stockin' || originalTransaction.transactionType === 'return') {
       inventoryItem.quantityInStock -= originalTransaction.quantity;
-    } else if (originalTransaction.transactionType === 'StockOut') {
+    } else if (originalTransaction.transactionType === 'stockout') {
       inventoryItem.quantityInStock += originalTransaction.quantity;
-    } else if (originalTransaction.transactionType === 'Adjustment') {
+    } else if (originalTransaction.transactionType === 'adjustment') {
       inventoryItem.quantityInStock -= originalTransaction.quantity;
     }
 
     // Apply the updated transaction
     const { transactionType, quantity } = req.body;
     
-    if (transactionType === 'StockIn' || transactionType === 'Return') {
+    if (transactionType === 'stockin' || transactionType === 'return') {
       inventoryItem.quantityInStock += quantity;
-    } else if (transactionType === 'StockOut') {
+    } else if (transactionType === 'stockout') {
       // Check if enough stock
       if (inventoryItem.quantityInStock < quantity) {
         return res.status(STATUS_CODES.BAD_REQUEST).json({
@@ -209,13 +200,13 @@ exports.updateTransaction = async (req, res) => {
         });
       }
       inventoryItem.quantityInStock -= quantity;
-    } else if (transactionType === 'Adjustment') {
+    } else if (transactionType === 'adjustment') {
       inventoryItem.quantityInStock += quantity;
       // Prevent negative inventory
       if (inventoryItem.quantityInStock < 0) {
         return res.status(STATUS_CODES.BAD_REQUEST).json({
           success: false,
-          message: 'Adjustment would result in negative inventory'
+          message: 'adjustment would result in negative inventory'
         });
       }
     }
@@ -224,14 +215,11 @@ exports.updateTransaction = async (req, res) => {
     const updatedTransaction = await StockTransaction.findByIdAndUpdate(
       id,
       req.body,
-      { new: true, runValidators: true, session }
+      { new: true, runValidators: true}
     );
 
     // Save inventory changes
-    await inventoryItem.save({ session });
-    
-    await session.commitTransaction();
-    session.endSession();
+    await inventoryItem.save();
 
     res.status(STATUS_CODES.OK).json({
       success: true,
@@ -239,8 +227,6 @@ exports.updateTransaction = async (req, res) => {
     });
   } catch (error) {
     Logger("Failed to update transaction", req, "stockTransactionController", "error", error);
-    await session.abortTransaction();
-    session.endSession();
     
     res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
       success: false,
@@ -252,9 +238,6 @@ exports.updateTransaction = async (req, res) => {
 
 // Delete transaction
 exports.deleteTransaction = async (req, res) => {
-  const session = await mongoose.startSession();
-  session.startTransaction();
-
   try {
     Logger("Deleting transaction", req, "stockTransactionController");
     const { id } = req.params;
@@ -278,7 +261,7 @@ exports.deleteTransaction = async (req, res) => {
     }
 
     // Revert the transaction's effect on inventory
-    if (transaction.transactionType === 'StockIn' || transaction.transactionType === 'Return') {
+    if (transaction.transactionType === 'stockin' || transaction.transactionType === 'return') {
       inventoryItem.quantityInStock -= transaction.quantity;
       // Prevent negative inventory
       if (inventoryItem.quantityInStock < 0) {
@@ -287,9 +270,9 @@ exports.deleteTransaction = async (req, res) => {
           message: 'Cannot delete transaction as it would result in negative inventory'
         });
       }
-    } else if (transaction.transactionType === 'StockOut') {
+    } else if (transaction.transactionType === 'stockout') {
       inventoryItem.quantityInStock += transaction.quantity;
-    } else if (transaction.transactionType === 'Adjustment') {
+    } else if (transaction.transactionType === 'adjustment') {
       inventoryItem.quantityInStock -= transaction.quantity;
       // Prevent negative inventory
       if (inventoryItem.quantityInStock < 0) {
@@ -301,13 +284,10 @@ exports.deleteTransaction = async (req, res) => {
     }
 
     // Delete the transaction
-    await StockTransaction.findByIdAndDelete(id, { session });
+    await StockTransaction.findByIdAndDelete(id);
     
     // Save inventory changes
-    await inventoryItem.save({ session });
-    
-    await session.commitTransaction();
-    session.endSession();
+    await inventoryItem.save();
 
     res.status(STATUS_CODES.OK).json({
       success: true,
@@ -315,8 +295,6 @@ exports.deleteTransaction = async (req, res) => {
     });
   } catch (error) {
     Logger("Failed to delete transaction", req, "stockTransactionController", "error", error);
-    await session.abortTransaction();
-    session.endSession();
     
     res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
       success: false,
@@ -348,15 +326,15 @@ exports.getItemStockBalance = async (req, res) => {
     
     // Get stock by location
     const stockByLocation = await StockTransaction.aggregate([
-      { $match: { item: mongoose.Types.ObjectId(itemId) } },
+      { $match: { item: itemId } },
       { $group: {
           _id: "$location",
           totalIn: { 
             $sum: {
               $cond: [
                 { $or: [
-                  { $eq: ["$transactionType", "StockIn"] },
-                  { $eq: ["$transactionType", "Return"] }
+                  { $eq: ["$transactionType", "stockin"] },
+                  { $eq: ["$transactionType", "return"] }
                 ]},
                 "$quantity", 
                 0
@@ -366,7 +344,7 @@ exports.getItemStockBalance = async (req, res) => {
           totalOut: {
             $sum: {
               $cond: [
-                { $eq: ["$transactionType", "StockOut"] },
+                { $eq: ["$transactionType", "stockout"] },
                 "$quantity", 
                 0
               ]
@@ -375,7 +353,7 @@ exports.getItemStockBalance = async (req, res) => {
           adjustments: {
             $sum: {
               $cond: [
-                { $eq: ["$transactionType", "Adjustment"] },
+                { $eq: ["$transactionType", "adjustment"] },
                 "$quantity", 
                 0
               ]

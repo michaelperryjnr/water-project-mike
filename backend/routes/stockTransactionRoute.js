@@ -157,6 +157,50 @@ router.get('/', StockTransactionController.getAllTransactions);
  *         description: Internal server error
  */
 
+/**
+ * @swagger
+ * /api/stock-transactions/item/{itemId}/balance:
+ *   get:
+ *     summary: Get inventory item stock balance and transaction history
+ *     tags: [Stock Transactions]
+ *     parameters:
+ *       - in: path
+ *         name: itemId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The inventory item ID
+ *     responses:
+ *       200:
+ *         description: Item stock balance details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     item:
+ *                       type: object
+ *                     recentTransactions:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/StockTransaction'
+ *                     stockByLocation:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *       404:
+ *         description: Inventory item not found
+ *       500:
+ *         description: Internal server error
+ */
+
+router.get('/item/:itemId/balance', StockTransactionController.getItemStockBalance);
+
 router.get('/:id', StockTransactionController.getTransactionById);
 
 /**
@@ -268,49 +312,5 @@ router.put('/:id', StockTransactionController.updateTransaction);
  */
 
 router.delete('/:id', StockTransactionController.deleteTransaction);
-
-/**
- * @swagger
- * /api/stock-transactions/item/{itemId}/balance:
- *   get:
- *     summary: Get inventory item stock balance and transaction history
- *     tags: [Stock Transactions]
- *     parameters:
- *       - in: path
- *         name: itemId
- *         schema:
- *           type: string
- *         required: true
- *         description: The inventory item ID
- *     responses:
- *       200:
- *         description: Item stock balance details
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 data:
- *                   type: object
- *                   properties:
- *                     item:
- *                       type: object
- *                     recentTransactions:
- *                       type: array
- *                       items:
- *                         $ref: '#/components/schemas/StockTransaction'
- *                     stockByLocation:
- *                       type: array
- *                       items:
- *                         type: object
- *       404:
- *         description: Inventory item not found
- *       500:
- *         description: Internal server error
- */
-
-router.get('/item/:itemId/balance', StockTransactionController.getItemStockBalance);
 
 module.exports = router;

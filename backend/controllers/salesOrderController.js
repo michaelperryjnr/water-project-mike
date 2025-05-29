@@ -3,8 +3,7 @@ const InventoryItem = require('../models/InventoryItem');
 const StockTransaction = require('../models/StockTransaction');
 const mongoose = require('mongoose');
 const {STATUS_CODES} = require("../config/core")
-const Logger = require("../utils/logger")
-const isTransactionSupported = require("../utils/transactionSupport");
+const Logger = require("../utils/logger");
 
 // Generate a unique order number
 const generateOrderNumber = async () => {

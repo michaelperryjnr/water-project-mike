@@ -12,7 +12,7 @@ exports.getAllSuppliers = async (req, res) => {
     const skip = (page - 1) * limit;
     
     const filter = {};
-    if (req.query.status) filter.status = req.query.status;
+    if (req.query.status) filter.status = req.query.status.toLowerCase();
     
     // Search by name
     if (req.query.search) {
@@ -185,7 +185,7 @@ exports.changeSupplierStatus = async (req, res) => {
     Logger("Changing supplier status", req, "supplierController");
     const { status } = req.body;
     
-    if (!status || !['Active', 'Inactive'].includes(status)) {
+    if (!status || !['active', 'inactive'].includes(status.toLowerCase())) {
       return res.status(STATUS_CODES.BAD_REQUEST).json({
         success: false,
         message: "Invalid status. Must be 'Active' or 'Inactive'"
