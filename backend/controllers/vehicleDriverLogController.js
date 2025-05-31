@@ -141,7 +141,7 @@ exports.deleteVehicleDriverLog = async (req, res) => {
 exports.getVehicleDriverLogsByVehicleId = async (req, res) => {
     try{
         Logger("Fetching vehicle driver logs by vehicle ID", req, "vehicleDriverLogController")
-        const vehicleDriverLogs = await VehicleDriverLog.find({ vehicleId: req.params.id})
+        const vehicleDriverLogs = await VehicleDriverLog.find({ vehicleId: req.params.vehicleId})
             .populate({
                 path: "vehicleId",
                 select: "registrationNumber model make yearOfManufacture"
@@ -228,7 +228,7 @@ exports.completeVehicleDriverLog = async (req, res) => {
                 select: "firstName lastName staffNumber email mobilePhone"
             })
 
-        if (!updatedDriverLog) return res.status(404).json({message: "Vehicle driver log not found."})
+        if (!updatedVehicleDriverLog) return res.status(404).json({message: "Vehicle driver log not found."})
         
         res.status(200).json(updatedVehicleDriverLog)
     } catch (error) {

@@ -228,7 +228,7 @@ exports.bulkCreateTaxRates = async (req, res) => {
         });
       }
       
-      if (!['Purchase', 'Sale', 'Both'].includes(taxRate.appliesTo)) {
+      if (!['purchase', 'sale', 'both'].includes(taxRate.appliesTo.toLowerCase())) {
         return res.status(STATUS_CODES.BAD_REQUEST).json({
           success: false,
           message: 'appliesTo must be one of: Purchase, Sale, Both'
@@ -302,8 +302,8 @@ exports.calculateTax = async (req, res) => {
     }
     
     // Check if tax applies to the specified transaction type
-    if (type && (type === 'Purchase' || type === 'Sale')) {
-      if (taxRate.appliesTo !== type && taxRate.appliesTo !== 'Both') {
+    if (type && (type.toLowerCase() === 'purchase' || type === 'sale')) {
+      if (taxRate.appliesTo.toLocaleLowerCase() !== type && taxRate.appliesTo.toLowerCase() !== 'both') {
         return res.status(STATUS_CODES.BAD_REQUEST).json({
           success: false,
           message: `This tax rate does not apply to ${type} transactions`
