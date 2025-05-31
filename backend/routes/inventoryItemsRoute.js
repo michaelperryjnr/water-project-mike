@@ -26,14 +26,14 @@ const InventoryItemController = require('../controllers/inventoryItemController'
  *           example: "Smartphone XYZ Model"
  *         inventoryType:
  *           type: string
- *           enum: [Physical, Service]
+ *           enum: [physical, service]
  *           description: Type of inventory
- *           example: "Physical"
+ *           example: "physical"
  *         unitOfMeasure:
  *           type: string
- *           enum: [Piece, Set, Box, Bundle, Kg, Liter]
+ *           enum: [piece, set, box, bundle, kg, liter]
  *           description: Unit of measurement
- *           example: "Piece"
+ *           example: "piece"
  *         saleable:
  *           type: boolean
  *           description: Whether the item can be sold
@@ -77,9 +77,9 @@ const InventoryItemController = require('../controllers/inventoryItemController'
  *           example: 5
  *         status:
  *           type: string
- *           enum: [Active, Discontinued, OnHold]
+ *           enum: [active, discontinued, onhold]
  *           description: Current status of the item
- *           example: "Active"
+ *           example: "active"
  */
 
 /**
@@ -112,7 +112,7 @@ const InventoryItemController = require('../controllers/inventoryItemController'
  *         name: status
  *         schema:
  *           type: string
- *           enum: [Active, Discontinued, OnHold]
+ *           enum: [active, discontinued, onhold]
  *         description: Filter by status
  *       - in: query
  *         name: category
@@ -123,7 +123,7 @@ const InventoryItemController = require('../controllers/inventoryItemController'
  *         name: inventoryType
  *         schema:
  *           type: string
- *           enum: [Physical, Service]
+ *           enum: [physical, service]
  *         description: Filter by inventory type
  *       - in: query
  *         name: search
@@ -245,7 +245,7 @@ router.get('/:id', InventoryItemController.getItemById);
  *                   initialStockLocation:
  *                     type: string
  *                     description: Location for initial stock
- *                     enum: [Warehouse, FinishedGoodsStore, RetailStore, Transit]
+ *                     enum: [warehouse, finishedgoodsstore, retailstore, transit]
  *     responses:
  *       201:
  *         description: Inventory item created successfully
@@ -368,9 +368,9 @@ router.delete('/:id', InventoryItemController.deleteItem);
  *                 example: 10
  *               location:
  *                 type: string
- *                 enum: [Warehouse, FinishedGoodsStore, RetailStore, Transit]
+ *                 enum: [warehouse, finishedgoodsstore, retailstore, transit]
  *                 description: Location where stock is being adjusted
- *                 example: "Warehouse"
+ *                 example: "warehouse"
  *               reason:
  *                 type: string
  *                 description: Reason for adjustment

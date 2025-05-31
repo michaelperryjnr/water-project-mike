@@ -32,9 +32,9 @@ const supplierController = require('../controllers/supplierController');
  *               example: "456 Business Ave, Commerce City, US"
  *         status:
  *           type: string
- *           enum: [Active, Inactive]
+ *           enum: [active, inactive]
  *           description: Status of the supplier
- *           example: "Active"
+ *           example: "active"
  *         createdAt:
  *           type: string
  *           format: date-time
@@ -180,7 +180,7 @@ router.get('/:id', supplierController.getSupplierById);
  *                     type: string
  *               status:
  *                 type: string
- *                 enum: [Active, Inactive]
+ *                 enum: [active, inactive]
  *     responses:
  *       201:
  *         description: Supplier created successfully
@@ -233,7 +233,7 @@ router.post('/', supplierController.createSupplier);
  *                     type: string
  *               status:
  *                 type: string
- *                 enum: [Active, Inactive]
+ *                 enum: [active, inactive]
  *     responses:
  *       200:
  *         description: Supplier updated successfully
@@ -311,7 +311,7 @@ router.delete('/:id', supplierController.deleteSupplier);
  *             properties:
  *               status:
  *                 type: string
- *                 enum: [Active, Inactive]
+ *                 enum: [active, inactive]
  *     responses:
  *       200:
  *         description: Supplier status changed successfully

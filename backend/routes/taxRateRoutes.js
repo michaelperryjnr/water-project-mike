@@ -23,13 +23,13 @@ const TaxRateController = require('../controllers/taxRateController');
  *           example: 20
  *         appliesTo:
  *           type: string
- *           enum: [Purchase, Sale, Both]
+ *           enum: [purchase, sale, both]
  *           description: Whether the tax applies to purchases, sales, or both
- *           example: "Both"
+ *           example: "both"
  *       example:
  *         name: "Standard VAT"
  *         rate: 20
- *         appliesTo: "Both"
+ *         appliesTo: "both"
  */
 
 /**
@@ -291,12 +291,12 @@ router.post('/bulk', TaxRateController.bulkCreateTaxRates);
  *                 description: Base value to calculate tax on
  *               type:
  *                 type: string
- *                 enum: [Purchase, Sale]
+ *                 enum: [purchase, sale]
  *                 description: Transaction type for tax applicability check
  *             example:
  *               taxRateId: "60d21b4667d0d8992e610c85"
  *               value: 100
- *               type: "Sale"
+ *               type: "sale"
  *     responses:
  *       200:
  *         description: Tax calculation results

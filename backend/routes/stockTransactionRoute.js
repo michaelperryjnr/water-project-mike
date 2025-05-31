@@ -20,27 +20,27 @@ const StockTransactionController = require('../controllers/stockTransactionContr
  *           example: "60d21b4667d0d8992e610c85"
  *         transactionType:
  *           type: string
- *           enum: [StockIn, StockOut, Adjustment, Return]
+ *           enum: [stockin, stockout, adjustment, return]
  *           description: Type of stock transaction
- *           example: "StockIn"
+ *           example: "stockin"
  *         quantity:
  *           type: number
  *           description: Quantity of items in the transaction
  *           example: 10
  *         location:
  *           type: string
- *           enum: [Warehouse, FinishedGoodsStore, RetailStore, Transit]
+ *           enum: [warehouse, finishedgoodsstore, retailstore, transit]
  *           description: Location where the transaction occurred
- *           example: "Warehouse"
+ *           example: "warehouse"
  *         reference:
  *           type: string
  *           description: Reference information for the transaction
  *           example: "PO-2025-001"
  *       example:
  *         item: "60d21b4667d0d8992e610c85"
- *         transactionType: "StockIn"
+ *         transactionType: "stockin"
  *         quantity: 10
- *         location: "Warehouse"
+ *         location: "warehouse"
  *         reference: "PO-2025-001"
  */
 
@@ -128,37 +128,6 @@ router.get('/', StockTransactionController.getAllTransactions);
 
 /**
  * @swagger
- * /api/stock-transactions/{id}:
- *   get:
- *     summary: Get a stock transaction by ID
- *     tags: [Stock Transactions]
- *     parameters:
- *       - in: path
- *         name: id
- *         schema:
- *           type: string
- *         required: true
- *         description: The stock transaction ID
- *     responses:
- *       200:
- *         description: Stock transaction details
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 data:
- *                   $ref: '#/components/schemas/StockTransaction'
- *       404:
- *         description: Transaction not found
- *       500:
- *         description: Internal server error
- */
-
-/**
- * @swagger
  * /api/stock-transactions/item/{itemId}/balance:
  *   get:
  *     summary: Get inventory item stock balance and transaction history
@@ -201,8 +170,6 @@ router.get('/', StockTransactionController.getAllTransactions);
 
 router.get('/item/:itemId/balance', StockTransactionController.getItemStockBalance);
 
-router.get('/:id', StockTransactionController.getTransactionById);
-
 /**
  * @swagger
  * /api/stock-transactions:
@@ -236,6 +203,39 @@ router.get('/:id', StockTransactionController.getTransactionById);
  */
 
 router.post('/', StockTransactionController.createTransaction);
+
+/**
+ * @swagger
+ * /api/stock-transactions/{id}:
+ *   get:
+ *     summary: Get a stock transaction by ID
+ *     tags: [Stock Transactions]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The stock transaction ID
+ *     responses:
+ *       200:
+ *         description: Stock transaction details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   $ref: '#/components/schemas/StockTransaction'
+ *       404:
+ *         description: Transaction not found
+ *       500:
+ *         description: Internal server error
+ */
+
+router.get('/:id', StockTransactionController.getTransactionById);
 
 /**
  * @swagger

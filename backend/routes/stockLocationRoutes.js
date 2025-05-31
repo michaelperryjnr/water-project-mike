@@ -18,9 +18,9 @@ const StockLocationController = require('../controllers/stockLocationController'
  *           example: "60d21b4667d0d8992e610c85"
  *         location:
  *           type: string
- *           enum: [Warehouse, FinishedGoodsStore, RetailStore, Transit]
+ *           enum: [warehouse, finishedgoodsstore, retailstore, transit]
  *           description: Location where stock is stored
- *           example: "Warehouse"
+ *           example: "warehouse"
  *         quantity:
  *           type: number
  *           description: Quantity in this location
@@ -37,12 +37,12 @@ const StockLocationController = require('../controllers/stockLocationController'
  *           description: ID of the inventory item
  *         transactionType:
  *           type: string
- *           enum: [StockIn, StockOut, Adjustment]
+ *           enum: [stockin, stockout, adjustment]
  *         quantity:
  *           type: number
  *         location:
  *           type: string
- *           enum: [Warehouse, FinishedGoodsStore, RetailStore, Transit]
+ *           enum: [warehouse, finishedgoodsstore, retailstore, transit]
  *         reference:
  *           type: string
  *         createdAt:
@@ -68,7 +68,7 @@ const StockLocationController = require('../controllers/stockLocationController'
  *         name: location
  *         schema:
  *           type: string
- *           enum: [Warehouse, FinishedGoodsStore, RetailStore, Transit]
+ *           enum: [warehouse, finishedgoodsstore, retailstore, transit]
  *         required: true
  *         description: Location name
  *       - in: query
@@ -197,14 +197,14 @@ router.get('/item/:itemId', StockLocationController.getStockByItem);
  *             properties:
  *               fromLocation:
  *                 type: string
- *                 enum: [Warehouse, FinishedGoodsStore, RetailStore, Transit]
+ *                 enum: [warehouse, finishedgoodsstore, retailstore, transit]
  *                 description: Source location
- *                 example: "Warehouse"
+ *                 example: "warehouse"
  *               toLocation:
  *                 type: string
- *                 enum: [Warehouse, FinishedGoodsStore, RetailStore, Transit]
+ *                 enum: [warehouse, finishedgoodsstore, retailstore, transit]
  *                 description: Destination location
- *                 example: "RetailStore"
+ *                 example: "retailstore"
  *               quantity:
  *                 type: number
  *                 description: Quantity to transfer

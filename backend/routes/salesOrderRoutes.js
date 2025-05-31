@@ -79,17 +79,17 @@ const salesOrderController = require('../controllers/salesOrderController');
  *           example: 65.98
  *         status:
  *           type: string
- *           enum: [Pending, Processing, Shipped, Delivered, Cancelled]
+ *           enum: [pending, processing, shipped, delivered, cancelled]
  *           description: Status of the order
  *           example: "Pending"
  *         paymentStatus:
  *           type: string
- *           enum: [Unpaid, Partial, Paid]
+ *           enum: [unpaid, partial, paid]
  *           description: Payment status of the order
  *           example: "Unpaid"
  *         paymentMethod:
  *           type: string
- *           enum: [Cash, CreditCard, BankTransfer, PayPal]
+ *           enum: [cash, creditcard, banktransfer, paypal]
  *           description: Method of payment
  *           example: "CreditCard"
  *         orderDate:
@@ -137,13 +137,13 @@ const salesOrderController = require('../controllers/salesOrderController');
  *         name: status
  *         schema:
  *           type: string
- *           enum: [Pending, Processing, Shipped, Delivered, Cancelled]
+ *           enum: [pending, processing, shipped, delivered, cancelled]
  *         description: Filter by order status
  *       - in: query
  *         name: paymentStatus
  *         schema:
  *           type: string
- *           enum: [Unpaid, Partial, Paid]
+ *           enum: [unpaid, partial, paid]
  *         description: Filter by payment status
  *       - in: query
  *         name: customerName
@@ -363,10 +363,10 @@ router.get('/:id', salesOrderController.getSalesOrderById);
  *                 type: number
  *               paymentStatus:
  *                 type: string
- *                 enum: [Unpaid, Partial, Paid]
+ *                 enum: [unpaid, partial, paid]
  *               paymentMethod:
  *                 type: string
- *                 enum: [Cash, CreditCard, BankTransfer, PayPal]
+ *                 enum: [cash, creditcard, banktransfer, paypal]
  *               deliveryDate:
  *                 type: string
  *                 format: date-time
@@ -411,13 +411,13 @@ router.post('/', salesOrderController.createSalesOrder);
  *             properties:
  *               status:
  *                 type: string
- *                 enum: [Pending, Processing, Shipped, Delivered, Cancelled]
+ *                 enum: [pending, processing, shipped, delivered, cancelled]
  *               paymentStatus:
  *                 type: string
- *                 enum: [Unpaid, Partial, Paid]
+ *                 enum: [unpaid, partial, paid]
  *               paymentMethod:
  *                 type: string
- *                 enum: [Cash, CreditCard, BankTransfer, PayPal]
+ *                 enum: [cash, creditcard, banktransfer, paypal]
  *               deliveryDate:
  *                 type: string
  *                 format: date-time
